@@ -1,0 +1,1633 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portal de Notícias Ultra-Rápido - Leitor Completo & Gerenciador</title>
+  <meta name="description" content="Portal de notícias otimizado com leitor de artigo completo, modo leitura global da página e gerenciador de feeds RSS.">
+  
+  <!-- Google Fonts & Font Awesome -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    /* OTIMIZAÇÃO DE DESEMPENHO: Cores sólidas de alta performance, sem backdrop-filter pesados */
+    :root {
+      --bg-dark: #090d16;
+      --bg-card: #111827;
+      --bg-card-hover: #1f2937;
+      --bg-modal: #0f172a;
+      --accent-primary: #3b82f6;
+      --accent-glow: #60a5fa;
+      --accent-cyan: #06b6d4;
+      --accent-green: #10b981;
+      --accent-purple: #8b5cf6;
+      --accent-red: #ef4444;
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --border-color: #1e293b;
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+      --transition: transform 0.2s ease, opacity 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      min-height: 100vh;
+      line-height: 1.6;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Top Ticker ultra-leve */
+    .ticker-wrap {
+      width: 100%;
+      background: #0f172a;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+      height: 40px;
+      position: sticky;
+      top: 0;
+      z-index: 90;
+      contain: layout style;
+    }
+
+    .ticker-title {
+      background: var(--accent-red);
+      color: white;
+      font-family: 'Outfit', sans-serif;
+      font-weight: 800;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: 0 16px;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+      z-index: 2;
+    }
+
+    .ticker-content {
+      display: flex;
+      white-space: nowrap;
+      animation: ticker 45s linear infinite;
+      padding-left: 20px;
+      will-change: transform;
+    }
+
+    .ticker-wrap:hover .ticker-content {
+      animation-play-state: paused;
+    }
+
+    .ticker-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 24px;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .ticker-item:hover {
+      color: var(--accent-glow);
+    }
+
+    @keyframes ticker {
+      0% { transform: translate3d(0, 0, 0); }
+      100% { transform: translate3d(-50%, 0, 0); }
+    }
+
+    /* Container */
+    .container {
+      max-width: 1340px;
+      margin: 0 auto;
+      padding: 20px 16px 60px;
+    }
+
+    /* Header */
+    header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 24px;
+      padding: 20px 24px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .brand-icon {
+      width: 48px;
+      height: 48px;
+      background: var(--accent-primary);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      color: white;
+    }
+
+    .brand-text h1 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.75rem;
+      font-weight: 800;
+      color: #ffffff;
+      letter-spacing: -0.5px;
+    }
+
+    .brand-text p {
+      font-size: 0.825rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .live-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 2px 8px;
+      background: rgba(239, 68, 68, 0.2);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      color: #f87171;
+      border-radius: 12px;
+      font-size: 0.7rem;
+      font-weight: 700;
+    }
+
+    .pulse-dot {
+      width: 6px;
+      height: 6px;
+      background-color: var(--accent-red);
+      border-radius: 50%;
+    }
+
+    /* Controls Panel */
+    .controls-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 9px 16px;
+      border-radius: 24px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+      border: none;
+      outline: none;
+    }
+
+    .btn-primary {
+      background: var(--accent-primary);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #2563eb;
+    }
+
+    .btn-secondary {
+      background: #1e293b;
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+    }
+
+    .btn-secondary:hover {
+      background: #334155;
+    }
+
+    .btn-accent {
+      background: var(--accent-purple);
+      color: white;
+    }
+
+    .btn-accent:hover {
+      background: #7c3aed;
+    }
+
+    .btn-danger {
+      background: rgba(239, 68, 68, 0.2);
+      color: #f87171;
+      border: 1px solid rgba(239, 68, 68, 0.4);
+    }
+
+    .btn-danger:hover {
+      background: rgba(239, 68, 68, 0.35);
+    }
+
+    .spin-icon {
+      transition: transform 0.6s ease;
+    }
+
+    .spinning {
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Filters Bar */
+    .filters-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+
+    .categories-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      scrollbar-width: thin;
+    }
+
+    .cat-btn {
+      padding: 7px 16px;
+      background: #1e293b;
+      border: 1px solid var(--border-color);
+      border-radius: 18px;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: var(--transition);
+    }
+
+    .cat-btn:hover {
+      background: #334155;
+      color: var(--text-main);
+    }
+
+    .cat-btn.active {
+      background: var(--accent-primary);
+      border-color: var(--accent-primary);
+      color: white;
+    }
+
+    .add-theme-btn {
+      padding: 7px 14px;
+      background: rgba(6, 182, 212, 0.15);
+      border: 1px dashed rgba(6, 182, 212, 0.4);
+      border-radius: 18px;
+      color: var(--accent-cyan);
+      font-size: 0.825rem;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .add-theme-btn:hover {
+      background: rgba(6, 182, 212, 0.3);
+    }
+
+    .search-box {
+      position: relative;
+      min-width: 240px;
+      flex-grow: 1;
+      max-width: 340px;
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 9px 16px 9px 38px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 24px;
+      color: var(--text-main);
+      font-size: 0.85rem;
+      outline: none;
+    }
+
+    .search-box input:focus {
+      border-color: var(--accent-primary);
+    }
+
+    .search-box i {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+    }
+
+    /* Otimização de Performance no Grid */
+    .news-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 20px;
+    }
+
+    /* News Card - Leve e Responsivo */
+    .news-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: var(--transition);
+      contain: content; /* Isolamento de layout para máxima velocidade */
+    }
+
+    .news-card:hover {
+      transform: translateY(-4px);
+      background: var(--bg-card-hover);
+      border-color: var(--accent-primary);
+    }
+
+    .card-img-wrap {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      position: relative;
+      background: #0f172a;
+      overflow: hidden;
+      cursor: pointer;
+    }
+
+    .card-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .card-tag {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      padding: 3px 10px;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      font-size: 0.725rem;
+      font-weight: 700;
+      color: var(--accent-cyan);
+      text-transform: uppercase;
+    }
+
+    .bookmark-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 5;
+    }
+
+    .bookmark-btn.saved {
+      color: #f59e0b;
+      background: rgba(245, 158, 11, 0.2);
+    }
+
+    .card-body {
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      flex-grow: 1;
+    }
+
+    .card-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.775rem;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .card-source {
+      color: var(--accent-glow);
+      font-weight: 600;
+    }
+
+    .card-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      line-height: 1.35;
+      margin-bottom: 8px;
+      color: var(--text-main);
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      cursor: pointer;
+    }
+
+    .card-snippet {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 14px;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      flex-grow: 1;
+    }
+
+    .card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid var(--border-color);
+      padding-top: 12px;
+      margin-top: auto;
+    }
+
+    .btn-read-modal {
+      background: rgba(59, 130, 246, 0.15);
+      color: var(--accent-glow);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      padding: 5px 12px;
+      border-radius: 16px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-read-modal:hover {
+      background: var(--accent-primary);
+      color: white;
+    }
+
+    /* PÁGINA EM MODO LEITURA COMPLETA */
+    .page-reader-layout {
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .page-reader-article {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 28px;
+    }
+
+    .page-reader-article h2 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.6rem;
+      font-weight: 800;
+      margin-bottom: 12px;
+      color: #ffffff;
+    }
+
+    .page-reader-content {
+      font-size: 1.05rem;
+      line-height: 1.8;
+      color: #d1d5db;
+      margin-top: 16px;
+    }
+
+    /* Load More Button */
+    .load-more-wrap {
+      text-align: center;
+      margin-top: 32px;
+    }
+
+    /* MODAL SYSTEM (Sem blur para máxima rapidez) */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(5, 8, 16, 0.85);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 16px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-container {
+      background: var(--bg-modal);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      width: 100%;
+      max-width: 860px;
+      max-height: 92vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      transform: scale(0.96);
+      transition: transform 0.2s ease;
+    }
+
+    .modal-overlay.active .modal-container {
+      transform: scale(1);
+    }
+
+    .modal-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #1e293b;
+    }
+
+    .modal-close-btn {
+      background: rgba(255, 255, 255, 0.1);
+      border: none;
+      color: var(--text-muted);
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+
+    .modal-close-btn:hover {
+      background: rgba(239, 68, 68, 0.3);
+      color: var(--accent-red);
+    }
+
+    .modal-body {
+      padding: 24px;
+      overflow-y: auto;
+      flex-grow: 1;
+    }
+
+    /* Reader Styling Inside Modal */
+    .reader-hero-img {
+      width: 100%;
+      max-height: 340px;
+      object-fit: cover;
+      border-radius: var(--radius-md);
+      margin-bottom: 16px;
+      border: 1px solid var(--border-color);
+    }
+
+    .reader-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      background: #1e293b;
+      padding: 10px 16px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .reader-content-box {
+      font-size: 1.05rem;
+      line-height: 1.8;
+      color: #e5e7eb;
+    }
+
+    .reader-content-box p {
+      margin-bottom: 16px;
+    }
+
+    /* Audio Player Bar (Leitor por voz global da página) */
+    .global-audio-bar {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%) translateY(120px);
+      background: #1e293b;
+      border: 1px solid var(--accent-primary);
+      border-radius: 30px;
+      padding: 10px 24px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+      z-index: 900;
+      transition: transform 0.3s ease;
+    }
+
+    .global-audio-bar.active {
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* Feed Manager Table */
+    .feed-manager-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+    }
+
+    .feed-manager-table th,
+    .feed-manager-table td {
+      padding: 10px 12px;
+      text-align: left;
+      border-bottom: 1px solid var(--border-color);
+      font-size: 0.85rem;
+    }
+
+    .feed-manager-table th {
+      color: var(--text-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 0.725rem;
+    }
+
+    .feed-form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      background: #1e293b;
+      padding: 16px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-color);
+      margin-top: 16px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .form-group.full-width {
+      grid-column: 1 / -1;
+    }
+
+    .form-group label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .form-group input {
+      padding: 8px 12px;
+      background: #0f172a;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      color: var(--text-main);
+      font-size: 0.85rem;
+      outline: none;
+    }
+
+    /* Toast Notification */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #1e293b;
+      border: 1px solid var(--accent-primary);
+      color: var(--text-main);
+      padding: 10px 18px;
+      border-radius: var(--radius-sm);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.85rem;
+      transform: translateY(100px);
+      opacity: 0;
+      transition: transform 0.25s ease, opacity 0.25s ease;
+      z-index: 2000;
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    footer {
+      margin-top: 50px;
+      text-align: center;
+      padding: 20px;
+      border-top: 1px solid var(--border-color);
+      color: var(--text-muted);
+      font-size: 0.825rem;
+    }
+
+    @media (max-width: 768px) {
+      .container { padding: 12px 10px 40px; }
+      header { flex-direction: column; align-items: flex-start; }
+      .controls-group { width: 100%; justify-content: space-between; }
+      .news-grid { grid-template-columns: 1fr; }
+      .filters-bar { flex-direction: column; align-items: stretch; }
+      .search-box { max-width: 100%; }
+      .feed-form-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Breaking News Ticker -->
+  <div class="ticker-wrap">
+    <div class="ticker-title">
+      <i class="fa-solid fa-bolt"></i> Última Hora
+    </div>
+    <div class="ticker-content" id="ticker-content">
+      <span class="ticker-item"><i class="fa-solid fa-circle-notch fa-spin"></i> Carregando destaques...</span>
+    </div>
+  </div>
+
+  <div class="container">
+    <!-- Header -->
+    <header>
+      <div class="brand">
+        <div class="brand-icon">
+          <i class="fa-solid fa-newspaper"></i>
+        </div>
+        <div class="brand-text">
+          <h1>Notícias & Portais</h1>
+          <p>
+            <span class="live-badge"><span class="pulse-dot"></span> AO VIVO</span>
+            <span id="current-date">Carregando data...</span>
+          </p>
+        </div>
+      </div>
+
+      <div class="controls-group">
+        <button class="btn btn-accent" id="btn-page-reader" onclick="togglePageReaderMode()">
+          <i class="fa-solid fa-book-open-reader"></i>
+          <span id="page-reader-label">Modo Leitura da Página</span>
+        </button>
+
+        <button class="btn btn-secondary" onclick="toggleGlobalAudioPlayer()">
+          <i class="fa-solid fa-volume-high"></i>
+          <span>Ouvir Notícias</span>
+        </button>
+
+        <button class="btn btn-secondary" onclick="openFeedManager()">
+          <i class="fa-solid fa-sliders"></i>
+          <span>Gerenciar Portais</span>
+        </button>
+
+        <button class="btn btn-primary" id="btn-refresh" onclick="forceRefresh()">
+          <i class="fa-solid fa-rotate spin-icon" id="refresh-icon"></i>
+          <span>Atualizar</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Filters & Search -->
+    <div class="filters-bar">
+      <div class="categories-wrapper" id="categories-wrapper">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <div class="search-box">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" id="search-input" placeholder="Buscar nas notícias..." oninput="handleSearch()">
+      </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <main id="main-content">
+      <div class="news-grid" id="news-grid">
+        <!-- Rendered articles or skeletons -->
+      </div>
+      <div class="load-more-wrap" id="load-more-wrap" style="display: none;">
+        <button class="btn btn-secondary" onclick="loadMoreArticles()" style="padding: 10px 28px;">
+          <i class="fa-solid fa-angle-down"></i> Carregar Mais Notícias
+        </button>
+      </div>
+    </main>
+
+    <footer>
+      <p>Portal de Notícias de Alta Performance &bull; Leitor de Página Inteira &bull; &copy; 2026</p>
+    </footer>
+  </div>
+
+  <!-- GLOBAL AUDIO PLAYER BAR -->
+  <div class="global-audio-bar" id="global-audio-bar">
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <i class="fa-solid fa-headphones" style="color: var(--accent-cyan);"></i>
+      <span id="audio-status-text" style="font-size: 0.85rem; font-weight: 600; max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Nenhuma notícia em execução</span>
+    </div>
+    <div style="display: flex; gap: 8px;">
+      <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.8rem;" onclick="prevAudioNews()"><i class="fa-solid fa-backward"></i></button>
+      <button class="btn btn-primary" style="padding: 6px 14px; font-size: 0.8rem;" id="btn-audio-play" onclick="toggleAudioPlayback()"><i class="fa-solid fa-play"></i></button>
+      <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.8rem;" onclick="nextAudioNews()"><i class="fa-solid fa-forward"></i></button>
+      <button class="btn btn-secondary" style="padding: 6px 10px; font-size: 0.8rem;" onclick="closeAudioPlayer()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+  </div>
+
+  <!-- READER MODAL -->
+  <div class="modal-overlay" id="reader-modal">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-book-open" style="color: var(--accent-cyan);"></i> Leitor de Notícia Completa</h3>
+        <button class="modal-close-btn" onclick="closeModal('reader-modal')"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body" id="reader-modal-body">
+        <!-- Injected via JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- FEED MANAGER MODAL -->
+  <div class="modal-overlay" id="feed-manager-modal">
+    <div class="modal-container" style="max-width: 880px;">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-sliders" style="color: var(--accent-primary);"></i> Gerenciar Portais e Feeds RSS</h3>
+        <button class="modal-close-btn" onclick="closeModal('feed-manager-modal')"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+          <p style="font-size: 0.85rem; color: var(--text-muted);">Edite, insira ou exclua os portais pesquisados.</p>
+          <button class="btn btn-secondary" onclick="restoreDefaultFeeds()" style="padding: 5px 10px; font-size: 0.775rem;">
+            <i class="fa-solid fa-rotate-left"></i> Restaurar Padrões
+          </button>
+        </div>
+
+        <table class="feed-manager-table">
+          <thead>
+            <tr>
+              <th>Portal</th>
+              <th>Tema</th>
+              <th>Feed RSS</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="feed-table-body">
+            <!-- Injected via JS -->
+          </tbody>
+        </table>
+
+        <form class="feed-form-grid" id="feed-form" onsubmit="handleSaveFeed(event)">
+          <input type="hidden" id="feed-edit-id" value="">
+          <h4 style="grid-column: 1/-1; font-family: Outfit; font-size: 1rem;" id="form-title">Adicionar Novo Portal</h4>
+          
+          <div class="form-group">
+            <label for="feed-name">Nome do Portal</label>
+            <input type="text" id="feed-name" placeholder="Ex: G1, BBC, Tecnoblog..." required>
+          </div>
+
+          <div class="form-group">
+            <label for="feed-category">Tema / Categoria</label>
+            <input type="text" id="feed-category" placeholder="Ex: Brasil, Tecnologia, Cinema..." required list="category-suggestions">
+            <datalist id="category-suggestions"></datalist>
+          </div>
+
+          <div class="form-group full-width">
+            <label for="feed-url">URL do Feed RSS</label>
+            <input type="url" id="feed-url" placeholder="https://exemplo.com/rss.xml" required>
+          </div>
+
+          <div style="grid-column: 1/-1; display: flex; justify-content: flex-end; gap: 8px; margin-top: 6px;">
+            <button type="button" class="btn btn-secondary" onclick="resetFeedForm()">Cancelar</button>
+            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Salvar Portal</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADD THEME MODAL -->
+  <div class="modal-overlay" id="add-theme-modal">
+    <div class="modal-container" style="max-width: 480px;">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-folder-plus" style="color: var(--accent-cyan);"></i> Adicionar Tema</h3>
+        <button class="modal-close-btn" onclick="closeModal('add-theme-modal')"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <form onsubmit="handleCreateTheme(event)">
+          <div class="form-group" style="margin-bottom: 14px;">
+            <label for="new-theme-name">Nome do Tema</label>
+            <input type="text" id="new-theme-name" placeholder="Ex: Cinema, Games, Política..." required>
+          </div>
+          <div class="form-group" style="margin-bottom: 18px;">
+            <label for="new-theme-rss">URL do Feed RSS Inicial</label>
+            <input type="url" id="new-theme-rss" placeholder="https://site.com/rss.xml" required>
+          </div>
+          <div style="display: flex; justify-content: flex-end; gap: 8px;">
+            <button type="button" class="btn btn-secondary" onclick="closeModal('add-theme-modal')">Cancelar</button>
+            <button type="submit" class="btn btn-accent"><i class="fa-solid fa-check"></i> Criar Tema</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast">
+    <i class="fa-solid fa-circle-check" style="color: #10b981;"></i>
+    <span id="toast-message">Atualizado!</span>
+  </div>
+
+  <script>
+    // DEFAULT FEEDS PRESET
+    const DEFAULT_FEEDS = [
+      { id: 'f1', name: 'Google News Brasil', category: 'Brasil', url: 'https://news.google.com/rss?hl=pt-BR&gl=BR&ceid=BR:pt-419' },
+      { id: 'f2', name: 'BBC Brasil', category: 'Brasil', url: 'https://feeds.bbci.co.uk/portuguese/rss.xml' },
+      { id: 'f3', name: 'Google News Mundo', category: 'Mundo', url: 'https://news.google.com/rss/headlines/section/topic/WORLD?hl=pt-BR&gl=BR&ceid=BR:pt-419' },
+      { id: 'f4', name: 'Google News Economia', category: 'Economia', url: 'https://news.google.com/rss/headlines/section/topic/BUSINESS?hl=pt-BR&gl=BR&ceid=BR:pt-419' },
+      { id: 'f5', name: 'Google News Tecnologia', category: 'Tecnologia', url: 'https://news.google.com/rss/headlines/section/topic/TECHNOLOGY?hl=pt-BR&gl=BR&ceid=BR:pt-419' },
+      { id: 'f6', name: 'Google News Esportes', category: 'Esportes', url: 'https://news.google.com/rss/headlines/section/topic/SPORTS?hl=pt-BR&gl=BR&ceid=BR:pt-419' }
+    ];
+
+    const CATEGORY_IMAGES = {
+      brasil: "https://images.unsplash.com/photo-1541872703-74c5e44368f9?auto=format&fit=crop&w=600&q=80",
+      mundo: "https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?auto=format&fit=crop&w=600&q=80",
+      economia: "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=600&q=80",
+      tecnologia: "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=600&q=80",
+      esportes: "https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=600&q=80",
+      default: "https://images.unsplash.com/photo-1504711434969-e33886168f5c?auto=format&fit=crop&w=600&q=80"
+    };
+
+    // State Variables
+    let feeds = JSON.parse(localStorage.getItem('portal_rss_feeds') || 'null') || DEFAULT_FEEDS;
+    let articles = [];
+    let savedArticleGuids = JSON.parse(localStorage.getItem('saved_articles') || '[]');
+    let currentCategory = 'all';
+    let searchQuery = '';
+    let isPageReaderMode = false;
+    let visibleCount = 12; // Paginação para desempenho
+    let readerFontSize = 1.05;
+
+    // Audio Player State
+    let audioIndex = 0;
+    let isAudioPlaying = false;
+
+    // DOM References
+    const grid = document.getElementById('news-grid');
+    const mainContent = document.getElementById('main-content');
+    const tickerContent = document.getElementById('ticker-content');
+    const currentDateDisplay = document.getElementById('current-date');
+    const categoriesWrapper = document.getElementById('categories-wrapper');
+    const loadMoreWrap = document.getElementById('load-more-wrap');
+
+    document.addEventListener('DOMContentLoaded', () => {
+      updateDateDisplay();
+      renderCategoriesBar();
+      fetchNews();
+
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          closeModal('reader-modal');
+          closeModal('feed-manager-modal');
+          closeModal('add-theme-modal');
+        }
+      });
+    });
+
+    function saveFeedsState() {
+      localStorage.setItem('portal_rss_feeds', JSON.stringify(feeds));
+      renderCategoriesBar();
+    }
+
+    function updateDateDisplay() {
+      const now = new Date();
+      const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+      const formatted = now.toLocaleDateString('pt-BR', options);
+      currentDateDisplay.textContent = formatted.charAt(0).toUpperCase() + formatted.slice(1);
+    }
+
+    function renderCategoriesBar() {
+      const categories = Array.from(new Set(feeds.map(f => f.category)));
+      let html = `<button class="cat-btn ${currentCategory === 'all' ? 'active' : ''}" onclick="selectCategory('all')">Todas</button>`;
+      
+      categories.forEach(cat => {
+        html += `<button class="cat-btn ${currentCategory === cat ? 'active' : ''}" onclick="selectCategory('${escapeHtml(cat)}')">${escapeHtml(cat)}</button>`;
+      });
+
+      html += `<button class="cat-btn ${currentCategory === 'salvos' ? 'active' : ''}" onclick="selectCategory('salvos')"><i class="fa-solid fa-bookmark"></i> Salvos</button>`;
+      html += `<button class="add-theme-btn" onclick="openModal('add-theme-modal')"><i class="fa-solid fa-plus"></i> Novo Tema</button>`;
+
+      categoriesWrapper.innerHTML = html;
+    }
+
+    function selectCategory(cat) {
+      currentCategory = cat;
+      visibleCount = 12;
+      renderCategoriesBar();
+      renderNews();
+    }
+
+    async function fetchNews(isManual = false) {
+      const refreshIcon = document.getElementById('refresh-icon');
+      if (refreshIcon) refreshIcon.classList.add('spinning');
+
+      try {
+        const fetchPromises = feeds.map(async (feed) => {
+          const apiUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feed.url)}`;
+          try {
+            const response = await fetch(apiUrl);
+            if (!response.ok) return [];
+            const data = await response.json();
+            if (data.status !== 'ok') return [];
+
+            return (data.items || []).map((item, index) => ({
+              id: `${feed.id}-${index}`,
+              guid: item.guid || item.link,
+              title: item.title,
+              description: item.description || '',
+              content: item.content || item.description || '',
+              link: item.link,
+              pubDate: new Date(item.pubDate || Date.now()),
+              category: feed.category,
+              source: feed.name || 'Portal',
+              cleanTitle: cleanNewsTitle(item.title),
+              thumbnail: extractThumbnail(item, feed.category.toLowerCase())
+            }));
+          } catch (err) {
+            return [];
+          }
+        });
+
+        const results = await Promise.all(fetchPromises);
+        let allItems = results.flat();
+        allItems.sort((a, b) => b.pubDate - a.pubDate);
+        articles = filterDuplicates(allItems);
+
+        renderNews();
+        renderTicker();
+
+        if (isManual) showToast('Feeds e notícias atualizados!');
+      } catch (error) {
+        showToast('Erro ao carregar notícias.');
+      } finally {
+        if (refreshIcon) refreshIcon.classList.remove('spinning');
+      }
+    }
+
+    function cleanNewsTitle(title) {
+      if (title.includes(' - ')) {
+        const parts = title.split(' - ');
+        parts.pop();
+        return parts.join(' - ').trim();
+      }
+      return title;
+    }
+
+    function extractThumbnail(item, categoryKey) {
+      if (item.thumbnail && item.thumbnail.startsWith('http')) return item.thumbnail;
+      if (item.enclosure && item.enclosure.link && item.enclosure.link.startsWith('http')) return item.enclosure.link;
+      const imgMatch = item.description && item.description.match(/<img[^>]+src=["']([^"']+)["']/i);
+      if (imgMatch && imgMatch[1]) return imgMatch[1];
+      return CATEGORY_IMAGES[categoryKey] || CATEGORY_IMAGES.default;
+    }
+
+    function filterDuplicates(items) {
+      const seen = new Set();
+      return items.filter(item => {
+        const key = item.cleanTitle.toLowerCase().slice(0, 25);
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+    }
+
+    function formatRelativeTime(date) {
+      const now = new Date();
+      const diffMins = Math.floor((now - date) / 60000);
+      const diffHours = Math.floor(diffMins / 60);
+
+      if (isNaN(diffMins) || diffMins < 5) return 'Agora';
+      if (diffMins < 60) return `há ${diffMins} min`;
+      if (diffHours < 24) return `há ${diffHours} h`;
+      return date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+    }
+
+    // Renderização com suporte a Modo Grid e Modo Leitura da Página Inteira
+    function renderNews() {
+      let filtered = articles;
+
+      if (currentCategory === 'salvos') {
+        filtered = articles.filter(a => savedArticleGuids.includes(a.guid));
+      } else if (currentCategory !== 'all') {
+        filtered = articles.filter(a => a.category.toLowerCase() === currentCategory.toLowerCase());
+      }
+
+      if (searchQuery.trim() !== '') {
+        const q = searchQuery.toLowerCase();
+        filtered = filtered.filter(a => 
+          a.cleanTitle.toLowerCase().includes(q) || 
+          a.description.toLowerCase().includes(q)
+        );
+      }
+
+      if (filtered.length === 0) {
+        mainContent.innerHTML = `
+          <div class="empty-state">
+            <i class="fa-regular fa-newspaper"></i>
+            <h3>Nenhuma notícia encontrada</h3>
+            <p>Selecione outra categoria ou gerencie seus portais RSS.</p>
+          </div>
+        `;
+        return;
+      }
+
+      // SE MODO LEITURA DA PÁGINA INTEIRA ESTIVER ATIVO
+      if (isPageReaderMode) {
+        const itemsToDisplay = filtered.slice(0, visibleCount);
+        let readerHtml = `<div class="page-reader-layout">`;
+        
+        itemsToDisplay.forEach((article, idx) => {
+          const bodyContent = formatFullText(article.content || article.description);
+          readerHtml += `
+            <article class="page-reader-article">
+              <div class="card-meta">
+                <span class="card-source"><i class="fa-solid fa-newspaper"></i> ${escapeHtml(article.source)}</span>
+                <span>•</span>
+                <span>${escapeHtml(article.category)}</span>
+                <span>•</span>
+                <span>${formatRelativeTime(article.pubDate)}</span>
+              </div>
+              <h2>${escapeHtml(article.cleanTitle)}</h2>
+              ${article.thumbnail ? `<img src="${article.thumbnail}" style="width:100%; max-height:380px; object-fit:cover; border-radius:12px; margin: 12px 0;" loading="lazy">` : ''}
+              <div class="page-reader-content">${bodyContent}</div>
+              <div style="margin-top: 16px; display: flex; gap: 10px;">
+                <button class="btn btn-secondary" onclick="fetchFullArticleText('${article.link}', 'reader-body-${idx}')">
+                  <i class="fa-solid fa-wand-magic-sparkles"></i> Buscar Artigo Completo
+                </button>
+                <a href="${article.link}" target="_blank" rel="noopener noreferrer" class="btn btn-primary" style="font-size:0.8rem;">
+                  Site Original <i class="fa-solid fa-external-link"></i>
+                </a>
+              </div>
+              <div id="reader-body-${idx}"></div>
+            </article>
+          `;
+        });
+
+        readerHtml += `</div>`;
+        mainContent.innerHTML = readerHtml;
+
+        loadMoreWrap.style.display = filtered.length > visibleCount ? 'block' : 'none';
+        if (filtered.length > visibleCount) mainContent.appendChild(loadMoreWrap);
+        return;
+      }
+
+      // MODO GRID PADRÃO (Otimizado)
+      const itemsToDisplay = filtered.slice(0, visibleCount);
+      let gridHtml = `<div class="news-grid" id="news-grid">`;
+
+      itemsToDisplay.forEach((article, idx) => {
+        const isSaved = savedArticleGuids.includes(article.guid);
+        const snippetText = stripHtml(article.description || '').slice(0, 150) + '...';
+
+        gridHtml += `
+          <article class="news-card">
+            <div class="card-img-wrap" onclick="openReaderModal(${idx})">
+              <img class="card-img" src="${article.thumbnail}" alt="Thumb" loading="lazy" decoding="async" onerror="this.src='${CATEGORY_IMAGES.default}'">
+              <span class="card-tag">${escapeHtml(article.category)}</span>
+              <button class="bookmark-btn ${isSaved ? 'saved' : ''}" onclick="event.stopPropagation(); toggleSaveArticle('${escapeHtml(article.guid)}')" title="Salvar">
+                <i class="fa-${isSaved ? 'solid' : 'regular'} fa-bookmark"></i>
+              </button>
+            </div>
+            <div class="card-body">
+              <div class="card-meta">
+                <span class="card-source">${escapeHtml(article.source)}</span>
+                <span>•</span>
+                <span>${formatRelativeTime(article.pubDate)}</span>
+              </div>
+              <h2 class="card-title" onclick="openReaderModal(${idx})">${escapeHtml(article.cleanTitle)}</h2>
+              <p class="card-snippet">${escapeHtml(snippetText)}</p>
+              <div class="card-footer">
+                <button class="btn-read-modal" onclick="openReaderModal(${idx})">
+                  <i class="fa-solid fa-book-open"></i> Ler Matéria
+                </button>
+                <a href="${article.link}" target="_blank" rel="noopener noreferrer" style="color:var(--text-muted); font-size:0.8rem; text-decoration:none;">
+                  <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                </a>
+              </div>
+            </div>
+          </article>
+        `;
+      });
+
+      gridHtml += `</div>`;
+      mainContent.innerHTML = gridHtml;
+
+      loadMoreWrap.style.display = filtered.length > visibleCount ? 'block' : 'none';
+      if (filtered.length > visibleCount) mainContent.appendChild(loadMoreWrap);
+    }
+
+    function loadMoreArticles() {
+      visibleCount += 12;
+      renderNews();
+    }
+
+    function togglePageReaderMode() {
+      isPageReaderMode = !isPageReaderMode;
+      const btnLabel = document.getElementById('page-reader-label');
+      const btn = document.getElementById('btn-page-reader');
+
+      if (isPageReaderMode) {
+        btnLabel.textContent = 'Modo Grid Padrão';
+        btn.classList.replace('btn-accent', 'btn-primary');
+        showToast('Ativado Modo Leitura da Página Inteira!');
+      } else {
+        btnLabel.textContent = 'Modo Leitura da Página';
+        btn.classList.replace('btn-primary', 'btn-accent');
+        showToast('Ativado Modo Grid.');
+      }
+      renderNews();
+    }
+
+    function renderTicker() {
+      if (articles.length === 0) return;
+      const topNews = articles.slice(0, 8);
+      const itemsHtml = topNews.map((a, i) => `
+        <span class="ticker-item" onclick="openReaderModal(${i})">
+          <strong>[${escapeHtml(a.source)}]</strong> ${escapeHtml(a.cleanTitle)}
+        </span>
+      `).join('');
+      tickerContent.innerHTML = itemsHtml + itemsHtml;
+    }
+
+    // LEITOR MODAL & EXTRATOR DE MATÉRIA COMPLETA
+    function openReaderModal(index) {
+      const article = articles[index];
+      if (!article) return;
+
+      const body = document.getElementById('reader-modal-body');
+      const initialText = formatFullText(article.content || article.description);
+
+      body.innerHTML = `
+        ${article.thumbnail ? `<img class="reader-hero-img" src="${article.thumbnail}">` : ''}
+        
+        <div class="card-meta" style="margin-bottom:12px;">
+          <span class="card-source"><i class="fa-solid fa-newspaper"></i> ${escapeHtml(article.source)}</span>
+          <span>•</span>
+          <span>${escapeHtml(article.category)}</span>
+          <span>•</span>
+          <span>${formatRelativeTime(article.pubDate)}</span>
+        </div>
+
+        <h1 style="font-family:Outfit; font-size:1.75rem; margin-bottom:16px;">${escapeHtml(article.cleanTitle)}</h1>
+
+        <div class="reader-toolbar">
+          <div style="display:flex; gap:6px; align-items:center;">
+            <button class="btn btn-secondary" style="padding:4px 8px;" onclick="changeFontSize(-0.1)">A-</button>
+            <button class="btn btn-secondary" style="padding:4px 8px;" onclick="changeFontSize(0.1)">A+</button>
+          </div>
+
+          <button class="btn btn-secondary" style="padding:6px 12px; font-size:0.8rem;" onclick="fetchFullArticleText('${article.link}', 'modal-extracted-body')">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> Extrair Texto Completo do Site
+          </button>
+
+          <button class="btn btn-secondary" style="padding:6px 12px; font-size:0.8rem;" onclick="speakArticle('${escapeHtml(article.cleanTitle)}')">
+            <i class="fa-solid fa-volume-high"></i> Ouvir
+          </button>
+        </div>
+
+        <div class="reader-content-box" id="modal-extracted-body" style="font-size: ${readerFontSize}rem;">
+          ${initialText}
+        </div>
+
+        <div style="margin-top:24px; padding-top:16px; border-top:1px solid var(--border-color); display:flex; justify-shadow:space-between;">
+          <a href="${article.link}" target="_blank" rel="noopener noreferrer" class="btn btn-primary" style="font-size:0.85rem;">
+            Abrir Notícia no Site Original <i class="fa-solid fa-external-link"></i>
+          </a>
+        </div>
+      `;
+
+      openModal('reader-modal');
+    }
+
+    // Extrator de conteúdo da matéria original via CORS Proxy público
+    async function fetchFullArticleText(articleUrl, targetContainerId) {
+      const container = document.getElementById(targetContainerId);
+      if (!container) return;
+
+      container.innerHTML = `<div style="padding:20px; text-align:center; color:var(--accent-cyan);"><i class="fa-solid fa-circle-notch fa-spin"></i> Extraindo texto completo da matéria...</div>`;
+
+      try {
+        const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(articleUrl)}`;
+        const response = await fetch(proxyUrl);
+        if (!response.ok) throw new Error('Proxy error');
+        const data = await response.json();
+        
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(data.contents, 'text/html');
+
+        // Extrai parágrafos principais
+        const paragraphs = Array.from(doc.querySelectorAll('article p, main p, .content p, .materia-conteudo p, p'))
+          .map(p => p.textContent.trim())
+          .filter(txt => txt.length > 40);
+
+        if (paragraphs.length > 0) {
+          container.innerHTML = `
+            <div style="background:rgba(16,185,129,0.1); border:1px solid rgba(16,185,129,0.3); padding:10px 14px; border-radius:8px; margin-bottom:16px; color:#10b981; font-size:0.85rem;">
+              <i class="fa-solid fa-check"></i> Matéria completa extraída do portal original!
+            </div>
+            ${paragraphs.map(p => `<p style="margin-bottom:16px;">${escapeHtml(p)}</p>`).join('')}
+          `;
+          showToast('Matéria completa extraída com sucesso!');
+        } else {
+          throw new Error('Não foi possível extrair parágrafos.');
+        }
+      } catch (err) {
+        container.innerHTML += `<p style="color:var(--text-muted); font-size:0.9rem;">Exibindo resumo fornecido pelo Feed RSS acima.</p>`;
+        showToast('Exibindo resumo completo do feed.');
+      }
+    }
+
+    function formatFullText(html) {
+      if (!html) return '<p>Sem conteúdo disponível.</p>';
+      const tmp = document.createElement('div');
+      tmp.innerHTML = html;
+      
+      // Remove scripts, styles
+      tmp.querySelectorAll('script, style, iframe, button').forEach(el => el.remove());
+      return tmp.innerHTML;
+    }
+
+    function changeFontSize(delta) {
+      readerFontSize = Math.max(0.85, Math.min(1.5, readerFontSize + delta));
+      const box = document.getElementById('modal-extracted-body');
+      if (box) box.style.fontSize = `${readerFontSize}rem`;
+    }
+
+    function speakArticle(text) {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const utter = new SpeechSynthesisUtterance(text);
+        utter.lang = 'pt-BR';
+        window.speechSynthesis.speak(utter);
+        showToast('Tocando áudio da notícia...');
+      }
+    }
+
+    // REPRODUTOR GLOBAL DE ÁUDIO (Ouvir Notícias em Sequência)
+    function toggleGlobalAudioPlayer() {
+      const bar = document.getElementById('global-audio-bar');
+      bar.classList.toggle('active');
+      if (bar.classList.contains('active')) {
+        audioIndex = 0;
+        playCurrentAudioNews();
+      } else {
+        stopAudio();
+      }
+    }
+
+    function closeAudioPlayer() {
+      document.getElementById('global-audio-bar').classList.remove('active');
+      stopAudio();
+    }
+
+    function playCurrentAudioNews() {
+      if (articles.length === 0) return;
+      const article = articles[audioIndex];
+      const statusText = document.getElementById('audio-status-text');
+      const playBtn = document.getElementById('btn-audio-play');
+
+      statusText.textContent = `[${audioIndex + 1}/${articles.length}] ${article.cleanTitle}`;
+      playBtn.innerHTML = `<i class="fa-solid fa-pause"></i>`;
+      isAudioPlaying = true;
+
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const utter = new SpeechSynthesisUtterance(`${article.source}: ${article.cleanTitle}`);
+        utter.lang = 'pt-BR';
+        utter.onend = () => {
+          if (isAudioPlaying && audioIndex < articles.length - 1) {
+            audioIndex++;
+            playCurrentAudioNews();
+          }
+        };
+        window.speechSynthesis.speak(utter);
+      }
+    }
+
+    function toggleAudioPlayback() {
+      if (isAudioPlaying) {
+        window.speechSynthesis.pause();
+        isAudioPlaying = false;
+        document.getElementById('btn-audio-play').innerHTML = `<i class="fa-solid fa-play"></i>`;
+      } else {
+        window.speechSynthesis.resume();
+        isAudioPlaying = true;
+        document.getElementById('btn-audio-play').innerHTML = `<i class="fa-solid fa-pause"></i>`;
+      }
+    }
+
+    function nextAudioNews() {
+      if (audioIndex < articles.length - 1) {
+        audioIndex++;
+        playCurrentAudioNews();
+      }
+    }
+
+    function prevAudioNews() {
+      if (audioIndex > 0) {
+        audioIndex--;
+        playCurrentAudioNews();
+      }
+    }
+
+    function stopAudio() {
+      if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+      isAudioPlaying = false;
+    }
+
+    // GERENCIADOR DE PORTAIS
+    function openFeedManager() {
+      renderFeedTable();
+      populateCategorySuggestions();
+      openModal('feed-manager-modal');
+    }
+
+    function renderFeedTable() {
+      const tbody = document.getElementById('feed-table-body');
+      tbody.innerHTML = feeds.map(f => `
+        <tr>
+          <td><strong>${escapeHtml(f.name)}</strong></td>
+          <td><span class="card-tag" style="position:static;">${escapeHtml(f.category)}</span></td>
+          <td style="max-width:240px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-family:monospace; font-size:0.775rem;">${escapeHtml(f.url)}</td>
+          <td>
+            <div style="display:flex; gap:6px;">
+              <button class="btn btn-secondary" style="padding:3px 7px; font-size:0.75rem;" onclick="editFeed('${f.id}')"><i class="fa-solid fa-pen"></i></button>
+              <button class="btn btn-danger" style="padding:3px 7px; font-size:0.75rem;" onclick="deleteFeed('${f.id}')"><i class="fa-solid fa-trash"></i></button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function populateCategorySuggestions() {
+      const list = document.getElementById('category-suggestions');
+      const cats = Array.from(new Set(feeds.map(f => f.category)));
+      list.innerHTML = cats.map(c => `<option value="${escapeHtml(c)}">`).join('');
+    }
+
+    function handleSaveFeed(e) {
+      e.preventDefault();
+      const id = document.getElementById('feed-edit-id').value;
+      const name = document.getElementById('feed-name').value.trim();
+      const category = document.getElementById('feed-category').value.trim();
+      const url = document.getElementById('feed-url').value.trim();
+
+      if (id) {
+        const feed = feeds.find(f => f.id === id);
+        if (feed) {
+          feed.name = name;
+          feed.category = category;
+          feed.url = url;
+          showToast('Portal atualizado!');
+        }
+      } else {
+        feeds.push({ id: 'f_' + Date.now(), name, category, url });
+        showToast('Novo portal salvo!');
+      }
+
+      saveFeedsState();
+      renderFeedTable();
+      resetFeedForm();
+      fetchNews(true);
+    }
+
+    function editFeed(id) {
+      const feed = feeds.find(f => f.id === id);
+      if (!feed) return;
+      document.getElementById('feed-edit-id').value = feed.id;
+      document.getElementById('feed-name').value = feed.name;
+      document.getElementById('feed-category').value = feed.category;
+      document.getElementById('feed-url').value = feed.url;
+      document.getElementById('form-title').textContent = 'Editar Portal';
+    }
+
+    function deleteFeed(id) {
+      if (feeds.length <= 1) {
+        showToast('Mantenha ao menos 1 portal cadastrado.');
+        return;
+      }
+      if (confirm('Deseja excluir este portal?')) {
+        feeds = feeds.filter(f => f.id !== id);
+        saveFeedsState();
+        renderFeedTable();
+        fetchNews(true);
+        showToast('Portal removido.');
+      }
+    }
+
+    function resetFeedForm() {
+      document.getElementById('feed-edit-id').value = '';
+      document.getElementById('feed-form').reset();
+      document.getElementById('form-title').textContent = 'Adicionar Novo Portal';
+    }
+
+    function restoreDefaultFeeds() {
+      if (confirm('Restaurar os portais padrão?')) {
+        feeds = JSON.parse(JSON.stringify(DEFAULT_FEEDS));
+        saveFeedsState();
+        renderFeedTable();
+        fetchNews(true);
+        showToast('Portais padrão restaurados!');
+      }
+    }
+
+    function handleCreateTheme(e) {
+      e.preventDefault();
+      const name = document.getElementById('new-theme-name').value.trim();
+      const rss = document.getElementById('new-theme-rss').value.trim();
+      feeds.push({ id: 'f_' + Date.now(), name: `${name} Feed`, category: name, url: rss });
+      saveFeedsState();
+      closeModal('add-theme-modal');
+      selectCategory(name);
+      fetchNews(true);
+      showToast(`Novo tema "${name}" adicionado!`);
+    }
+
+    function openModal(id) {
+      document.getElementById(id).classList.add('active');
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.remove('active');
+    }
+
+    function handleSearch() {
+      searchQuery = document.getElementById('search-input').value;
+      renderNews();
+    }
+
+    function toggleSaveArticle(guid) {
+      if (savedArticleGuids.includes(guid)) {
+        savedArticleGuids = savedArticleGuids.filter(g => g !== guid);
+        showToast('Notícia removida dos salvos.');
+      } else {
+        savedArticleGuids.push(guid);
+        showToast('Notícia salva!');
+      }
+      localStorage.setItem('saved_articles', JSON.stringify(savedArticleGuids));
+      renderNews();
+    }
+
+    function forceRefresh() {
+      fetchNews(true);
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      document.getElementById('toast-message').textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2800);
+    }
+
+    function stripHtml(html) {
+      const tmp = document.createElement("DIV");
+      tmp.innerHTML = html;
+      return tmp.textContent || tmp.innerText || "";
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+    }
+  </script>
+</body>
+</html>
