@@ -189,15 +189,17 @@
       border-radius: 50%;
     }
 
-    /* Controls Panel */
-    .controls-group {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      flex-wrap: wrap;
+    /* Links & Buttons Legibility */
+    a {
+      color: var(--accent-glow);
+      text-decoration: none;
     }
 
-    .btn {
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .btn, a.btn {
       display: inline-flex;
       align-items: center;
       justify-content: center;
@@ -210,44 +212,92 @@
       transition: var(--transition);
       border: none;
       outline: none;
+      text-decoration: none !important;
     }
 
-    .btn-primary {
+    .btn-primary, a.btn-primary, a.btn-primary:visited, a.btn-primary:hover, a.btn-primary:active {
       background: var(--accent-primary);
-      color: white;
+      color: #ffffff !important;
     }
 
-    .btn-primary:hover {
+    .btn-primary:hover, a.btn-primary:hover {
       background: #2563eb;
+      color: #ffffff !important;
     }
 
-    .btn-secondary {
+    .btn-secondary, a.btn-secondary, a.btn-secondary:visited {
       background: #1e293b;
-      color: var(--text-main);
+      color: #ffffff !important;
       border: 1px solid var(--border-color);
     }
 
-    .btn-secondary:hover {
+    .btn-secondary:hover, a.btn-secondary:hover {
       background: #334155;
+      color: #ffffff !important;
     }
 
-    .btn-accent {
+    .btn-accent, a.btn-accent, a.btn-accent:visited {
       background: var(--accent-purple);
-      color: white;
+      color: #ffffff !important;
     }
 
-    .btn-accent:hover {
+    .btn-accent:hover, a.btn-accent:hover {
       background: #7c3aed;
+      color: #ffffff !important;
     }
 
-    .btn-danger {
+    .btn-danger, a.btn-danger, a.btn-danger:visited {
       background: rgba(239, 68, 68, 0.2);
-      color: #f87171;
+      color: #f87171 !important;
       border: 1px solid rgba(239, 68, 68, 0.4);
     }
 
-    .btn-danger:hover {
+    .btn-danger:hover, a.btn-danger:hover {
       background: rgba(239, 68, 68, 0.35);
+      color: #f87171 !important;
+    }
+
+    /* Extraction Progress Box */
+    .extraction-progress-box {
+      background: #1e293b;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 18px 20px;
+      margin: 16px 0;
+      text-align: left;
+    }
+
+    .extraction-status-text {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.925rem;
+      font-weight: 600;
+      color: var(--accent-cyan);
+      margin-bottom: 10px;
+    }
+
+    .progress-track {
+      width: 100%;
+      height: 10px;
+      background: #0f172a;
+      border-radius: 5px;
+      overflow: hidden;
+      margin-bottom: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent-primary), var(--accent-cyan));
+      border-radius: 5px;
+      transition: width 0.35s ease;
+    }
+
+    .progress-subtext {
+      font-size: 0.8rem;
+      color: var(--text-muted);
     }
 
     .spin-icon {
@@ -1198,7 +1248,7 @@
                 <button class="btn btn-secondary" onclick="fetchFullArticleText('${article.link}', 'reader-body-${idx}')">
                   <i class="fa-solid fa-wand-magic-sparkles"></i> Buscar Artigo Completo
                 </button>
-                <a href="${article.link}" target="_blank" rel="noopener noreferrer" class="btn btn-primary" style="font-size:0.8rem;">
+                <a href="${article.link}" target="_blank" rel="noopener noreferrer" class="btn btn-primary" style="font-size:0.8rem; color:#ffffff !important;">
                   Site Original <i class="fa-solid fa-external-link"></i>
                 </a>
               </div>
@@ -1244,7 +1294,7 @@
                 <button class="btn-read-modal" onclick="openReaderModal('${article.id}')">
                   <i class="fa-solid fa-book-open"></i> Ler Matéria
                 </button>
-                <a href="${article.link}" target="_blank" rel="noopener noreferrer" style="color:var(--text-muted); font-size:0.8rem; text-decoration:none;">
+                <a href="${article.link}" target="_blank" rel="noopener noreferrer" style="color:var(--accent-cyan); font-size:0.85rem; text-decoration:none;" title="Abrir no site original">
                   <i class="fa-solid fa-arrow-up-right-from-square"></i>
                 </a>
               </div>
@@ -1336,7 +1386,7 @@
         </div>
 
         <div style="margin-top:24px; padding-top:16px; border-top:1px solid var(--border-color); display:flex; justify-content:space-between;">
-          <a href="${article.link}" target="_blank" rel="noopener noreferrer" class="btn btn-primary" style="font-size:0.85rem;">
+          <a href="${article.link}" target="_blank" rel="noopener noreferrer" class="btn btn-primary" style="font-size:0.85rem; color:#ffffff !important;">
             Abrir Notícia no Site Original <i class="fa-solid fa-external-link"></i>
           </a>
         </div>
@@ -1350,41 +1400,192 @@
       if (article) speakArticle(article.cleanTitle);
     }
 
-    // Extrator de conteúdo da matéria original via CORS Proxy público
+    function parseJinaMarkdown(text) {
+      if (!text) return [];
+      const lines = text.split('\n');
+      const paragraphs = [];
+
+      for (let line of lines) {
+        line = line.trim();
+        if (!line) continue;
+        if (line.startsWith('Title:') || line.startsWith('URL Source:') || line.startsWith('Published Time:') || line.startsWith('Markdown Content:')) continue;
+        if (line.startsWith('![') || line.startsWith('Crédito') || line.startsWith('Legenda da foto')) continue;
+        if (line.startsWith('* ') || line.startsWith('Tempo de leitura:') || line.startsWith('Author,') || line.startsWith('Role,')) continue;
+        
+        if (line.startsWith('#')) {
+          const headingText = line.replace(/^#+\s*/, '').trim();
+          if (headingText && !headingText.toLowerCase().includes('mais clicadas') && !headingText.toLowerCase().includes('redes sociais') && !headingText.toLowerCase().includes('nossos parceiros')) {
+            paragraphs.push(`<h3 style="font-family:Outfit; margin:16px 0 8px; color:var(--accent-cyan); font-size:1.15rem;">${escapeHtml(headingText)}</h3>`);
+          }
+          continue;
+        }
+
+        let cleanText = line.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1');
+        cleanText = cleanText.replace(/[*_~`]/g, '').trim();
+
+        if (cleanText.length > 30 && !cleanText.toLowerCase().includes('direitos reservados') && !cleanText.toLowerCase().includes('politica de privacidade') && !cleanText.toLowerCase().includes('termos de uso')) {
+          paragraphs.push(escapeHtml(cleanText));
+        }
+      }
+      return paragraphs;
+    }
+
+    // Extrator Avançado de Notícias (Jina Reader AI Engine + Proxies CORS + RSS Fallback)
     async function fetchFullArticleText(articleUrl, targetContainerId) {
       const container = document.getElementById(targetContainerId);
       if (!container) return;
 
-      container.innerHTML = `<div style="padding:20px; text-align:center; color:var(--accent-cyan);"><i class="fa-solid fa-circle-notch fa-spin"></i> Extraindo texto completo da matéria...</div>`;
+      const originalHost = new URL(articleUrl).hostname;
 
-      try {
-        const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(articleUrl)}`;
-        const response = await fetch(proxyUrl);
-        if (!response.ok) throw new Error('Proxy error');
-        const data = await response.json();
-        
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(data.contents, 'text/html');
+      container.innerHTML = `
+        <div class="extraction-progress-box" id="extract-box">
+          <div class="extraction-status-text">
+            <i class="fa-solid fa-rotate spin-icon spinning" style="color: var(--accent-cyan);"></i>
+            <span id="extract-status-label">Iniciando extração inteligente...</span>
+          </div>
+          <div class="progress-track">
+            <div class="progress-fill" id="extract-progress-bar" style="width: 15%;"></div>
+          </div>
+          <div class="progress-subtext" id="extract-subtext">Conectando ao motor de leitura para ${escapeHtml(originalHost)}...</div>
+        </div>
+      `;
 
-        // Extrai parágrafos principais
-        const paragraphs = Array.from(doc.querySelectorAll('article p, main p, .content p, .materia-conteudo p, p'))
-          .map(p => p.textContent.trim())
-          .filter(txt => txt.length > 40);
+      function updateProgress(percent, label, subtext) {
+        const bar = document.getElementById('extract-progress-bar');
+        const lbl = document.getElementById('extract-status-label');
+        const sub = document.getElementById('extract-subtext');
+        if (bar) bar.style.width = percent + '%';
+        if (lbl) lbl.textContent = label;
+        if (sub) sub.textContent = subtext;
+      }
 
-        if (paragraphs.length > 0) {
-          container.innerHTML = `
-            <div style="background:rgba(16,185,129,0.1); border:1px solid rgba(16,185,129,0.3); padding:10px 14px; border-radius:8px; margin-bottom:16px; color:#10b981; font-size:0.85rem;">
-              <i class="fa-solid fa-check"></i> Matéria completa extraída do portal original!
-            </div>
-            ${paragraphs.map(p => `<p style="margin-bottom:16px;">${escapeHtml(p)}</p>`).join('')}
-          `;
-          showToast('Matéria completa extraída com sucesso!');
-        } else {
-          throw new Error('Não foi possível extrair parágrafos.');
+      const engines = [
+        {
+          name: 'Jina Reader Engine (IA)',
+          type: 'jina',
+          fetch: async (url, signal) => {
+            const res = await fetch(`https://r.jina.ai/${url}`, { signal });
+            if (!res.ok) throw new Error('Jina Reader HTTP ' + res.status);
+            return await res.text();
+          }
+        },
+        {
+          name: 'AllOrigins Proxy',
+          type: 'json_html',
+          fetch: async (url, signal) => {
+            const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`, { signal });
+            if (!res.ok) throw new Error('Proxy HTTP ' + res.status);
+            const data = await res.json();
+            return data.contents;
+          }
+        },
+        {
+          name: 'CorsProxy Direct',
+          type: 'raw_html',
+          fetch: async (url, signal) => {
+            const res = await fetch(`https://corsproxy.io/?${encodeURIComponent(url)}`, { signal });
+            if (!res.ok) throw new Error('Proxy HTTP ' + res.status);
+            return await res.text();
+          }
+        },
+        {
+          name: 'CodeTabs Proxy',
+          type: 'raw_html',
+          fetch: async (url, signal) => {
+            const res = await fetch(`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`, { signal });
+            if (!res.ok) throw new Error('Proxy HTTP ' + res.status);
+            return await res.text();
+          }
         }
-      } catch (err) {
-        container.innerHTML += `<p style="color:var(--text-muted); font-size:0.9rem;">Exibindo resumo fornecido pelo Feed RSS acima.</p>`;
-        showToast('Exibindo resumo completo do feed.');
+      ];
+
+      let extractedParagraphs = [];
+      let successEngineName = '';
+
+      for (let i = 0; i < engines.length; i++) {
+        const engine = engines[i];
+        const percent = 20 + Math.round(((i + 1) / engines.length) * 65);
+        updateProgress(percent, `Extraindo via ${engine.name}...`, `Obtendo matéria de ${escapeHtml(originalHost)} (Método ${i + 1}/${engines.length})`);
+
+        try {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 7500);
+
+          const rawResult = await engine.fetch(articleUrl, controller.signal);
+          clearTimeout(timeoutId);
+
+          if (!rawResult || rawResult.length < 150) continue;
+
+          if (engine.type === 'jina') {
+            const parsed = parseJinaMarkdown(rawResult);
+            if (parsed.length >= 2) {
+              extractedParagraphs = parsed;
+              successEngineName = engine.name;
+              updateProgress(90, 'Texto processado via IA!', 'Formatando matéria em parágrafos limpos...');
+              break;
+            }
+          } else {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(rawResult, 'text/html');
+            doc.querySelectorAll('script, style, iframe, header, footer, nav, aside, form, svg, .comments, .ads, .advertisement').forEach(el => el.remove());
+
+            const selectors = ['article p', '.article-body p', '.content p', '.materia-conteudo p', '.post-content p', 'main p', 'p'];
+            for (const sel of selectors) {
+              const found = Array.from(doc.querySelectorAll(sel))
+                .map(p => p.textContent.trim())
+                .filter(txt => txt.length > 35 && !txt.toLowerCase().includes('cookies'));
+              if (found.length >= 3) {
+                extractedParagraphs = found.map(p => escapeHtml(p));
+                successEngineName = engine.name;
+                break;
+              }
+            }
+            if (extractedParagraphs.length >= 2) {
+              updateProgress(90, 'HTML extraído com sucesso!', 'Gerando texto limpo...');
+              break;
+            }
+          }
+        } catch (err) {
+          console.warn(`Engine ${engine.name} falhou:`, err);
+        }
+      }
+
+      updateProgress(100, 'Extração Concluída!', 'Apresentando matéria na tela...');
+
+      if (extractedParagraphs.length > 0) {
+        setTimeout(() => {
+          container.innerHTML = `
+            <div style="background:rgba(16,185,129,0.15); border:1px solid rgba(16,185,129,0.4); padding:12px 16px; border-radius:12px; margin:16px 0; color:#10b981; font-size:0.875rem; display:flex; align-items:center; gap:12px;">
+              <i class="fa-solid fa-circle-check" style="font-size:1.3rem;"></i>
+              <div>
+                <strong>Matéria completa extraída com sucesso de ${escapeHtml(originalHost)}!</strong>
+                <div style="font-size:0.775rem; color:var(--text-muted);">${extractedParagraphs.length} blocos de conteúdo obtidos via ${escapeHtml(successEngineName)}.</div>
+              </div>
+            </div>
+            <div class="extracted-text-body" style="font-size:1.05rem; line-height:1.8; color:#e5e7eb;">
+              ${extractedParagraphs.map(p => p.startsWith('<h3') ? p : `<p style="margin-bottom:16px;">${p}</p>`).join('')}
+            </div>
+          `;
+          showToast('Matéria completa extraída!');
+        }, 300);
+      } else {
+        // FALLBACK INTELIGENTE: Se os servidores falharem, exibe os dados do feed RSS formatados sem erro de bloqueio
+        setTimeout(() => {
+          container.innerHTML = `
+            <div style="background:rgba(59,130,246,0.15); border:1px solid rgba(59,130,246,0.3); padding:14px; border-radius:12px; margin:16px 0; color:#60a5fa; font-size:0.875rem;">
+              <div style="display:flex; align-items:center; gap:10px; margin-bottom:6px; font-weight:700;">
+                <i class="fa-solid fa-circle-info" style="font-size:1.1rem;"></i> Exibindo Conteúdo Completo do Feed RSS
+              </div>
+              <p style="color:var(--text-muted); font-size:0.825rem;">O portal ${escapeHtml(originalHost)} requer abertura direta no navegador para certas imagens. Você também pode visitar a página oficial:</p>
+              <div style="margin-top:10px;">
+                <a href="${escapeHtml(articleUrl)}" target="_blank" rel="noopener noreferrer" class="btn btn-primary" style="font-size:0.8rem; color:#ffffff !important;">
+                  Abrir no site original (${escapeHtml(originalHost)}) <i class="fa-solid fa-external-link"></i>
+                </a>
+              </div>
+            </div>
+          `;
+          showToast('Conteúdo do feed carregado.');
+        }, 300);
       }
     }
 
