@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Portal de Notícias Ultra-Rápido - Leitor Completo & Gerenciador</title>
   <meta name="description" content="Portal de notícias otimizado com leitor de artigo completo, modo leitura global da página e gerenciador de feeds RSS.">
   
@@ -932,14 +932,73 @@
       font-size: 0.825rem;
     }
 
-    @media (max-width: 768px) {
-      .container { padding: 12px 10px 40px; }
-      header { flex-direction: column; align-items: flex-start; }
-      .controls-group { width: 100%; justify-content: space-between; }
-      .news-grid { grid-template-columns: 1fr; }
-      .filters-bar { flex-direction: column; align-items: stretch; }
-      .search-box { max-width: 100%; }
+    /* ==========================================================================
+       ADAPTAÇÃO MULTI-DISPOSITIVOS (Smartwatches, Celulares, Dobráveis, Tablets, TVs)
+       ========================================================================== */
+
+    /* Foco Acessível & D-Pad para Smart TVs e Navegação por Teclado */
+    :focus-visible {
+      outline: 3px solid var(--accent-primary) !important;
+      outline-offset: 3px !important;
+      box-shadow: 0 0 14px var(--accent-glow) !important;
+    }
+
+    /* Safe Area Insets (Para iOS Notches & Gesture Bars) */
+    .container {
+      padding-top: max(var(--grid-24), env(safe-area-inset-top));
+      padding-bottom: max(var(--grid-48), env(safe-area-inset-bottom));
+      padding-left: max(var(--grid-16), env(safe-area-inset-left));
+      padding-right: max(var(--grid-16), env(safe-area-inset-right));
+    }
+
+    /* 1. Smartwatches e Telas Ultra-Pequenas (< 480px) */
+    @media (max-width: 479px) {
+      .container { padding: 8px 8px 36px; }
+      header { padding: 12px; gap: 10px; flex-direction: column; align-items: stretch; }
+      .brand-icon { width: 38px; height: 38px; font-size: 1.2rem; }
+      .brand-text h1 { font-size: 1.3rem; }
+      .controls-group { flex-direction: column; width: 100%; gap: 8px; }
+      .controls-group .btn { width: 100%; justify-content: center; min-height: 44px; }
+      .theme-selector-wrap { width: 100%; justify-content: space-between; }
+      .theme-btn { padding: 8px 12px; min-height: 44px; }
+      .categories-wrapper { gap: 6px; padding-bottom: 6px; }
+      .cat-btn { padding: 8px 12px; font-size: 0.8rem; min-height: 44px; }
+      .news-grid { grid-template-columns: 1fr; gap: 14px; }
+      .news-card { border-radius: var(--radius-sm); }
+      .card-body { padding: 14px; }
+      .modal-container { max-height: 96vh; border-radius: var(--radius-md); }
+      .modal-body { padding: 14px; }
+      .global-audio-bar { width: 94%; padding: 8px 14px; border-radius: 20px; }
       .feed-form-grid { grid-template-columns: 1fr; }
+    }
+
+    /* 2. Smartphones Padrão (480px a 767px - Thumb Zone Ergonomics) */
+    @media (min-width: 480px) and (max-width: 767px) {
+      .container { padding: 14px 12px 40px; }
+      header { padding: 16px; flex-direction: column; align-items: stretch; gap: 12px; }
+      .controls-group { width: 100%; justify-content: space-between; flex-wrap: wrap; }
+      .controls-group .btn { min-height: 44px; }
+      .news-grid { grid-template-columns: 1fr; gap: 16px; }
+      .filters-bar { flex-direction: column; align-items: stretch; gap: 12px; }
+      .search-box { max-width: 100%; min-height: 44px; }
+      .feed-form-grid { grid-template-columns: 1fr; }
+    }
+
+    /* 3. Tablets em Retrato & Dobráveis Aberto (768px a 1023px) */
+    @media (min-width: 768px) and (max-width: 1023px) {
+      .news-grid { grid-template-columns: repeat(2, 1fr); gap: 20px; }
+      .modal-container { width: 92vw; }
+    }
+
+    /* 4. Laptops e Desktops (1024px a 1439px) */
+    @media (min-width: 1024px) and (max-width: 1439px) {
+      .news-grid { grid-template-columns: repeat(3, 1fr); gap: 24px; }
+    }
+
+    /* 5. Smart TVs & 10-Foot UI (>= 1920px) */
+    @media (min-width: 1920px) {
+      .container { max-width: 1600px; }
+      .news-grid { grid-template-columns: repeat(4, 1fr); gap: 28px; }
     }
   </style>
 </head>
@@ -1430,14 +1489,107 @@
       }
     }
 
+    // RESTAURADOR DE CARACTERES CORROMPIDOS (Fix para ter?a, pr?mio, milh?es, etc.)
+    function fixCorruptedEncoding(str) {
+      if (!str) return '';
+      let s = str;
+
+      // Mojibake comum UTF-8 em Latin-1
+      s = s.replace(/Ã§/g, 'ç').replace(/Ã\u0087/g, 'Ç')
+           .replace(/Ã¡/g, 'á').replace(/Ã\u0081/g, 'Á')
+           .replace(/Ã©/g, 'é').replace(/Ã\u0089/g, 'É')
+           .replace(/Ã­/g, 'í').replace(/Ã\u008D/g, 'Í')
+           .replace(/Ã³/g, 'ó').replace(/Ã\u0093/g, 'Ó')
+           .replace(/Ãº/g, 'ú').replace(/Ã\u009A/g, 'Ú')
+           .replace(/Ã£/g, 'ã').replace(/Ã\u0083/g, 'Ã')
+           .replace(/Ãµ/g, 'õ').replace(/Ã\u0095/g, 'Õ')
+           .replace(/Ã¢/g, 'â').replace(/Ã\u0082/g, 'Â')
+           .replace(/Ãª/g, 'ê').replace(/Ã\u008A/g, 'Ê')
+           .replace(/Ã´/g, 'ô').replace(/Ã\u0094/g, 'Ô')
+           .replace(/\uFFFD/g, '?');
+
+      // Correções estritas de palavras comuns em português com ? no RSS
+      const fixes = [
+        [/\bter\?a/gi, 'terça'],
+        [/\bpr\?mio/gi, 'prêmio'],
+        [/\bmilh\?es/gi, 'milhões'],
+        [/\bmilh\?o/gi, 'milhão'],
+        [/\beleier\?\?es/gi, 'eleições'],
+        [/\belei\?\?es/gi, 'eleições'],
+        [/\belei\?ao/gi, 'eleição'],
+        [/\binforma\?\?es/gi, 'informações'],
+        [/\binforma\?ao/gi, 'informação'],
+        [/\bop\?\?es/gi, 'opções'],
+        [/\bop\?ao/gi, 'opção'],
+        [/\bac\?\?es/gi, 'ações'],
+        [/\bac\?ao/gi, 'ação'],
+        [/\bse\?\?es/gi, 'seções'],
+        [/\bse\?ao/gi, 'seção'],
+        [/\brela\?\?es/gi, 'relações'],
+        [/\brela\?ao/gi, 'relação'],
+        [/\bdire\?\?es/gi, 'direções'],
+        [/\bdire\?ao/gi, 'direção'],
+        [/\bmar\?o/gi, 'março'],
+        [/\bs\?bado/gi, 'sábado'],
+        [/\best\?/gi, 'está'],
+        [/\bser\?/gi, 'será'],
+        [/\bat\?/gi, 'até'],
+        [/\bn\?o/gi, 'não'],
+        [/\bs\?o/gi, 'são'],
+        [/\bt\?m/gi, 'têm'],
+        [/\bpa\?s/gi, 'país'],
+        [/\bsa\?de/gi, 'saúde'],
+        [/\bin\?cio/gi, 'início'],
+        [/\bconte\?do/gi, 'conteúdo'],
+        [/\busu\?rio/gi, 'usuário'],
+        [/\bam\?rica/gi, 'américa'],
+        [/\bs\?rie/gi, 'série'],
+        [/\bhist\?ria/gi, 'história'],
+        [/\bnot\?cia/gi, 'notícia'],
+        [/\bnot\?cias/gi, 'notícias'],
+        [/\bport\?o/gi, 'portão'],
+        [/\bvis\?o/gi, 'visão'],
+        [/\bcampe\?o/gi, 'campeão'],
+        [/\bcampe\?es/gi, 'campeões'],
+        [/\bvers\?o/gi, 'versão'],
+        [/\bdecis\?o/gi, 'decisão'],
+        [/\bregi\?o/gi, 'região'],
+        [/\bexibi\?\?o/gi, 'exibição'],
+        [/\braz\?o/gi, 'razão'],
+        [/\baten\?\?o/gi, 'atenção'],
+        [/\bprote\?\?o/gi, 'proteção'],
+        [/\bedi\?\?o/gi, 'edição'],
+        [/\bprodu\?\?o/gi, 'produção'],
+        [/\baltera\?\?o/gi, 'alteração'],
+        [/\baltera\?\?es/gi, 'alterações']
+      ];
+
+      for (let [pat, rep] of fixes) {
+        s = s.replace(pat, rep);
+      }
+
+      // Regras fonéticas flexíveis para palavras portuguesas com ?
+      s = s.replace(/(\w+)\?\?es\b/gi, '$1ções')
+           .replace(/(\w+)r\?es\b/gi, '$1rões')
+           .replace(/(\w+)l\?es\b/gi, '$1lhões')
+           .replace(/(\w+)t\?rio\b/gi, '$1tório')
+           .replace(/(\w+)t\?ria\b/gi, '$1tória')
+           .replace(/(\w+)r\?ia\b/gi, '$1ria')
+           .replace(/(\w+)r\?io\b/gi, '$1rio')
+           .replace(/(\w+)\?o\b/gi, '$1ão');
+
+      return s;
+    }
+
     function cleanNewsTitle(title) {
       if (!title) return 'Notícia Sem Título';
-      if (title.includes(' - ')) {
-        const parts = title.split(' - ');
+      let fixedTitle = fixCorruptedEncoding(title);
+      if (fixedTitle.includes(' - ')) {
+        const parts = fixedTitle.split(' - ');
         parts.pop();
         return parts.join(' - ').trim();
       }
-      return title;
+      return fixedTitle;
     }
 
     // Gerador de Imagens Sintetizadas por IA (Pollinations AI Engine)
@@ -1853,9 +2005,30 @@
       renderNews();
     }
 
+    function getArticleTextForSpeech(article) {
+      if (!article) return '';
+      const cached = getCachedExtractedText(article.link);
+      let bodyText = '';
+
+      if (cached && cached.paragraphs && cached.paragraphs.length > 0) {
+        bodyText = cached.paragraphs
+          .map(p => stripHtml(p).trim())
+          .filter(p => p.length > 15 && !p.startsWith('<h3'))
+          .join('. ');
+      } else if (article.content || article.description) {
+        bodyText = stripHtml(article.content || article.description);
+      }
+
+      const fullProse = `${article.cleanTitle}. ${bodyText}`.trim();
+      return fixCorruptedEncoding(fullProse);
+    }
+
     function speakArticleById(id) {
       const article = articles.find(a => a.id === id || a.guid === id);
-      if (article) speakArticle(article.cleanTitle);
+      if (article) {
+        const fullText = getArticleTextForSpeech(article);
+        speakArticle(fullText, article.cleanTitle);
+      }
     }
 
     // Extrator de Texto com Filtragem Estrita de Lixo Visual, Ícones e Links de Redes Sociais
@@ -2151,14 +2324,53 @@
       if (box) box.style.fontSize = `${readerFontSize}rem`;
     }
 
-    function speakArticle(text) {
-      if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-        const utter = new SpeechSynthesisUtterance(text);
-        utter.lang = 'pt-BR';
-        window.speechSynthesis.speak(utter);
-        showToast('Tocando áudio da notícia...');
+    function speakArticle(text, shortTitle = '') {
+      if (!('speechSynthesis' in window)) {
+        showToast('Navegador não suporta síntese de voz.');
+        return;
       }
+
+      window.speechSynthesis.cancel();
+      isAudioPlaying = true;
+
+      const cleanText = fixCorruptedEncoding(text);
+      const sentences = cleanText.split(/(?<=[.!?])\s+/).filter(s => s.trim().length > 0);
+
+      if (sentences.length === 0) return;
+
+      let sentenceIdx = 0;
+      const statusText = document.getElementById('audio-status-text');
+      const playBtn = document.getElementById('btn-audio-play');
+      if (playBtn) playBtn.innerHTML = `<i class="fa-solid fa-pause"></i>`;
+
+      function speakNextSentence() {
+        if (!isAudioPlaying || sentenceIdx >= sentences.length) {
+          isAudioPlaying = false;
+          if (playBtn) playBtn.innerHTML = `<i class="fa-solid fa-play"></i>`;
+          return;
+        }
+
+        const sentenceText = sentences[sentenceIdx];
+        const utter = new SpeechSynthesisUtterance(sentenceText);
+        utter.lang = 'pt-BR';
+        utter.rate = 1.0;
+
+        utter.onend = () => {
+          sentenceIdx++;
+          speakNextSentence();
+        };
+
+        utter.onerror = (e) => {
+          sentenceIdx++;
+          speakNextSentence();
+        };
+
+        window.speechSynthesis.speak(utter);
+      }
+
+      if (statusText) statusText.textContent = shortTitle ? `Lendo: ${shortTitle}` : 'Lendo matéria completa...';
+      showToast('Iniciando leitura da matéria completa...');
+      speakNextSentence();
     }
 
     // REPRODUTOR GLOBAL DE ÁUDIO (Ouvir Notícias em Sequência)
@@ -2186,22 +2398,52 @@
       const statusText = document.getElementById('audio-status-text');
       const playBtn = document.getElementById('btn-audio-play');
 
-      statusText.textContent = `[${audioIndex + 1}/${activeArticles.length}] ${article.cleanTitle}`;
-      playBtn.innerHTML = `<i class="fa-solid fa-pause"></i>`;
+      if (statusText) statusText.textContent = `[${audioIndex + 1}/${activeArticles.length}] ${article.cleanTitle}`;
+      if (playBtn) playBtn.innerHTML = `<i class="fa-solid fa-pause"></i>`;
+
+      const fullText = getArticleTextForSpeech(article);
+
+      if (!('speechSynthesis' in window)) return;
+      window.speechSynthesis.cancel();
       isAudioPlaying = true;
 
-      if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-        const utter = new SpeechSynthesisUtterance(`${article.source}: ${article.cleanTitle}`);
-        utter.lang = 'pt-BR';
-        utter.onend = () => {
-          if (isAudioPlaying && audioIndex < activeArticles.length - 1) {
+      const cleanText = fixCorruptedEncoding(fullText);
+      const sentences = cleanText.split(/(?<=[.!?])\s+/).filter(s => s.trim().length > 0);
+      let sentenceIdx = 0;
+
+      function speakSentenceInList() {
+        if (!isAudioPlaying) return;
+        if (sentenceIdx >= sentences.length) {
+          // Quando terminar esta matéria, passa para a próxima notícia da lista!
+          if (audioIndex < activeArticles.length - 1) {
             audioIndex++;
             playCurrentAudioNews();
+          } else {
+            isAudioPlaying = false;
+            if (playBtn) playBtn.innerHTML = `<i class="fa-solid fa-play"></i>`;
           }
+          return;
+        }
+
+        const sentenceText = sentences[sentenceIdx];
+        const utter = new SpeechSynthesisUtterance(sentenceText);
+        utter.lang = 'pt-BR';
+        utter.rate = 1.0;
+
+        utter.onend = () => {
+          sentenceIdx++;
+          speakSentenceInList();
         };
+
+        utter.onerror = () => {
+          sentenceIdx++;
+          speakSentenceInList();
+        };
+
         window.speechSynthesis.speak(utter);
       }
+
+      speakSentenceInList();
     }
 
     function toggleAudioPlayback() {
