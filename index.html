@@ -1141,8 +1141,7 @@
       return date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
     }
 
-    // Renderização com suporte a Modo Grid e Modo Leitura da Página Inteira
-    function renderNews() {
+    function getFilteredArticles() {
       let filtered = articles;
 
       if (currentCategory === 'salvos') {
@@ -1158,6 +1157,12 @@
           a.description.toLowerCase().includes(q)
         );
       }
+      return filtered;
+    }
+
+    // Renderização com suporte a Modo Grid e Modo Leitura da Página Inteira
+    function renderNews() {
+      let filtered = getFilteredArticles();
 
       if (filtered.length === 0) {
         mainContent.innerHTML = `
@@ -1214,13 +1219,13 @@
       const itemsToDisplay = filtered.slice(0, visibleCount);
       let gridHtml = `<div class="news-grid" id="news-grid">`;
 
-      itemsToDisplay.forEach((article, idx) => {
+      itemsToDisplay.forEach((article) => {
         const isSaved = savedArticleGuids.includes(article.guid);
         const snippetText = stripHtml(article.description || '').slice(0, 150) + '...';
 
         gridHtml += `
           <article class="news-card">
-            <div class="card-img-wrap" onclick="openReaderModal(${idx})">
+            <div class="card-img-wrap" onclick="openReaderModal('${article.id}')">
               <img class="card-img" src="${article.thumbnail}" alt="Thumb" loading="lazy" decoding="async" onerror="this.src='${CATEGORY_IMAGES.default}'">
               <span class="card-tag">${escapeHtml(article.category)}</span>
               <button class="bookmark-btn ${isSaved ? 'saved' : ''}" onclick="event.stopPropagation(); toggleSaveArticle('${escapeHtml(article.guid)}')" title="Salvar">
@@ -1233,10 +1238,10 @@
                 <span>•</span>
                 <span>${formatRelativeTime(article.pubDate)}</span>
               </div>
-              <h2 class="card-title" onclick="openReaderModal(${idx})">${escapeHtml(article.cleanTitle)}</h2>
+              <h2 class="card-title" onclick="openReaderModal('${article.id}')">${escapeHtml(article.cleanTitle)}</h2>
               <p class="card-snippet">${escapeHtml(snippetText)}</p>
               <div class="card-footer">
-                <button class="btn-read-modal" onclick="openReaderModal(${idx})">
+                <button class="btn-read-modal" onclick="openReaderModal('${article.id}')">
                   <i class="fa-solid fa-book-open"></i> Ler Matéria
                 </button>
                 <a href="${article.link}" target="_blank" rel="noopener noreferrer" style="color:var(--text-muted); font-size:0.8rem; text-decoration:none;">
@@ -1280,8 +1285,8 @@
     function renderTicker() {
       if (articles.length === 0) return;
       const topNews = articles.slice(0, 8);
-      const itemsHtml = topNews.map((a, i) => `
-        <span class="ticker-item" onclick="openReaderModal(${i})">
+      const itemsHtml = topNews.map((a) => `
+        <span class="ticker-item" onclick="openReaderModal('${a.id}')">
           <strong>[${escapeHtml(a.source)}]</strong> ${escapeHtml(a.cleanTitle)}
         </span>
       `).join('');
@@ -1289,8 +1294,10 @@
     }
 
     // LEITOR MODAL & EXTRATOR DE MATÉRIA COMPLETA
-    function openReaderModal(index) {
-      const article = articles[index];
+    function openReaderModal(identifier) {
+      const article = typeof identifier === 'number' 
+        ? articles[identifier] 
+        : articles.find(a => a.id === identifier || a.guid === identifier);
       if (!article) return;
 
       const body = document.getElementById('reader-modal-body');
@@ -1319,7 +1326,7 @@
             <i class="fa-solid fa-wand-magic-sparkles"></i> Extrair Texto Completo do Site
           </button>
 
-          <button class="btn btn-secondary" style="padding:6px 12px; font-size:0.8rem;" onclick="speakArticle('${escapeHtml(article.cleanTitle)}')">
+          <button class="btn btn-secondary" style="padding:6px 12px; font-size:0.8rem;" onclick="speakArticleById('${article.id}')">
             <i class="fa-solid fa-volume-high"></i> Ouvir
           </button>
         </div>
@@ -1328,7 +1335,7 @@
           ${initialText}
         </div>
 
-        <div style="margin-top:24px; padding-top:16px; border-top:1px solid var(--border-color); display:flex; justify-shadow:space-between;">
+        <div style="margin-top:24px; padding-top:16px; border-top:1px solid var(--border-color); display:flex; justify-content:space-between;">
           <a href="${article.link}" target="_blank" rel="noopener noreferrer" class="btn btn-primary" style="font-size:0.85rem;">
             Abrir Notícia no Site Original <i class="fa-solid fa-external-link"></i>
           </a>
@@ -1336,6 +1343,11 @@
       `;
 
       openModal('reader-modal');
+    }
+
+    function speakArticleById(id) {
+      const article = articles.find(a => a.id === id || a.guid === id);
+      if (article) speakArticle(article.cleanTitle);
     }
 
     // Extrator de conteúdo da matéria original via CORS Proxy público
@@ -1420,12 +1432,14 @@
     }
 
     function playCurrentAudioNews() {
-      if (articles.length === 0) return;
-      const article = articles[audioIndex];
+      const activeArticles = getFilteredArticles();
+      if (activeArticles.length === 0) return;
+      if (audioIndex >= activeArticles.length) audioIndex = 0;
+      const article = activeArticles[audioIndex];
       const statusText = document.getElementById('audio-status-text');
       const playBtn = document.getElementById('btn-audio-play');
 
-      statusText.textContent = `[${audioIndex + 1}/${articles.length}] ${article.cleanTitle}`;
+      statusText.textContent = `[${audioIndex + 1}/${activeArticles.length}] ${article.cleanTitle}`;
       playBtn.innerHTML = `<i class="fa-solid fa-pause"></i>`;
       isAudioPlaying = true;
 
@@ -1434,7 +1448,7 @@
         const utter = new SpeechSynthesisUtterance(`${article.source}: ${article.cleanTitle}`);
         utter.lang = 'pt-BR';
         utter.onend = () => {
-          if (isAudioPlaying && audioIndex < articles.length - 1) {
+          if (isAudioPlaying && audioIndex < activeArticles.length - 1) {
             audioIndex++;
             playCurrentAudioNews();
           }
