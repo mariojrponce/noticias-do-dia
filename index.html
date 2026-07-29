@@ -6,32 +6,75 @@
   <title>Portal de Notícias Ultra-Rápido - Leitor Completo & Gerenciador</title>
   <meta name="description" content="Portal de notícias otimizado com leitor de artigo completo, modo leitura global da página e gerenciador de feeds RSS.">
   
-  <!-- Google Fonts & Font Awesome -->
+  <!-- Google Fonts Ergonomicas (WCAG / ISO 9241-307) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Georgia&family=Inter:wght@400;500;600;700&family=Merriweather:ital,wght@0,300;0,400;0,700;1,300;1,400&family=Outfit:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
   <style>
-    /* OTIMIZAÇÃO DE DESEMPENHO: Cores sólidas de alta performance, sem backdrop-filter pesados */
-    :root {
-      --bg-dark: #090d16;
-      --bg-card: #111827;
-      --bg-card-hover: #1f2937;
-      --bg-modal: #0f172a;
-      --accent-primary: #3b82f6;
-      --accent-glow: #60a5fa;
-      --accent-cyan: #06b6d4;
+    /* ==========================================================================
+       SISTEMA DE LEITURA ERGONÔMICA (Guia AOA/AAO/WCAG 2.1 & ISO 9241-307)
+       ========================================================================== */
+
+    /* Tema Padrão do Sistema: Escuro Suave (Soft Dark Mode) */
+    :root, body, body[data-theme="dark-soft"] {
+      --bg-dark: #18181B;
+      --bg-card: #222228;
+      --bg-card-hover: #2C2C34;
+      --bg-modal: #1F1F24;
+      --accent-primary: #6366F1;
+      --accent-glow: #818CF8;
+      --accent-cyan: #38BDF8;
       --accent-green: #10b981;
-      --accent-purple: #8b5cf6;
+      --accent-purple: #a855f7;
       --accent-red: #ef4444;
-      --text-main: #f3f4f6;
-      --text-muted: #9ca3af;
-      --border-color: #1e293b;
+      --text-main: #E4E4E7;
+      --text-muted: #A1A1AA;
+      --border-color: #27272A;
       --radius-sm: 8px;
       --radius-md: 14px;
       --radius-lg: 20px;
-      --transition: transform 0.2s ease, opacity 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
+      --font-reading-serif: 'Georgia', 'Merriweather', 'Source Serif Pro', serif;
+      --font-reading-sans: 'Inter', 'Plus Jakarta Sans', system-ui, sans-serif;
+      --font-size-body: 1.1875rem; /* ~19px conforme o guia */
+      --line-height-body: 1.58;
+      --max-measure: 65ch; /* ~65 caracteres por linha conforme WCAG */
+      --transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease, transform 0.2s ease;
+    }
+
+    /* Tema Sépia / Creme (Opcional no Leitor) */
+    body[data-theme="sepia"] {
+      --bg-dark: #FBF0D9;
+      --bg-card: #F4ECD8;
+      --bg-card-hover: #EFE4C9;
+      --bg-modal: #F7EAD0;
+      --accent-primary: #8C531B;
+      --accent-glow: #A06224;
+      --accent-cyan: #784717;
+      --accent-green: #15803d;
+      --accent-purple: #7e22ce;
+      --accent-red: #b91c1c;
+      --text-main: #2B2B2B;
+      --text-muted: #6B5640;
+      --border-color: #E6D7B8;
+    }
+
+    /* Tema Claro Suave (Soft Light Mode) */
+    body[data-theme="light-soft"] {
+      --bg-dark: #F8F9FA;
+      --bg-card: #FFFFFF;
+      --bg-card-hover: #EDF2F7;
+      --bg-modal: #FFFFFF;
+      --accent-primary: #2B6CB0;
+      --accent-glow: #3182CE;
+      --accent-cyan: #2C5282;
+      --accent-green: #059669;
+      --accent-purple: #6d28d9;
+      --accent-red: #dc2626;
+      --text-main: #2D3748;
+      --text-muted: #4A5568;
+      --border-color: #E2E8F0;
     }
 
     * {
@@ -41,13 +84,14 @@
     }
 
     body {
-      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-family: var(--font-reading-sans);
       background-color: var(--bg-dark);
       color: var(--text-main);
       min-height: 100vh;
-      line-height: 1.6;
+      line-height: var(--line-height-body);
       overflow-x: hidden;
       -webkit-font-smoothing: antialiased;
+      transition: var(--transition);
     }
 
     /* Top Ticker ultra-leve */
@@ -478,6 +522,45 @@
       background: rgba(245, 158, 11, 0.2);
     }
 
+    .read-btn {
+      position: absolute;
+      top: 10px;
+      right: 48px;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 5;
+      transition: var(--transition);
+    }
+
+    .read-btn:hover {
+      background: rgba(59, 130, 246, 0.3);
+      color: var(--accent-cyan);
+    }
+
+    .read-btn.read {
+      color: #10b981;
+      background: rgba(16, 185, 129, 0.25);
+      border-color: rgba(16, 185, 129, 0.4);
+    }
+
+    .news-card.is-read {
+      opacity: 0.7;
+    }
+
+    .btn-secondary.active-hide {
+      background: rgba(239, 68, 68, 0.2);
+      color: #f87171 !important;
+      border-color: rgba(239, 68, 68, 0.4);
+    }
+
     .card-body {
       padding: 16px;
       display: flex;
@@ -557,7 +640,7 @@
       display: flex;
       flex-direction: column;
       gap: 28px;
-      max-width: 900px;
+      max-width: 820px;
       margin: 0 auto;
     }
 
@@ -565,22 +648,51 @@
       background: var(--bg-card);
       border: 1px solid var(--border-color);
       border-radius: var(--radius-md);
-      padding: 28px;
+      padding: 32px;
     }
 
     .page-reader-article h2 {
-      font-family: 'Outfit', sans-serif;
-      font-size: 1.6rem;
+      font-family: var(--font-reading-sans);
+      font-size: 1.7rem;
       font-weight: 800;
-      margin-bottom: 12px;
-      color: #ffffff;
+      line-height: 1.3;
+      margin-bottom: 14px;
+      color: var(--text-main);
     }
 
+    /* CONTEÚDO DE LEITURA ERGONÔMICO (Conforme Guia de Ergonomia WCAG / AOA) */
+    .reader-content-box,
+    .extracted-text-body,
     .page-reader-content {
-      font-size: 1.05rem;
-      line-height: 1.8;
-      color: #d1d5db;
-      margin-top: 16px;
+      font-family: var(--font-reading-serif, 'Georgia', serif);
+      font-size: var(--font-size-body, 1.1875rem);
+      line-height: var(--line-height-body, 1.58);
+      color: var(--text-main);
+      max-width: var(--max-measure, 65ch);
+      margin: 0 auto;
+      text-align: left; /* Alinhamento estritamente à esquerda (Ragged Right), NUNCA justificado */
+      letter-spacing: 0.01em;
+      text-rendering: optimizeLegibility;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .reader-content-box p,
+    .extracted-text-body p,
+    .page-reader-content p {
+      margin-top: 0;
+      margin-bottom: 1.4em;
+      letter-spacing: 0.01em;
+    }
+
+    .reader-content-box h1, .reader-content-box h2, .reader-content-box h3,
+    .extracted-text-body h1, .extracted-text-body h2, .extracted-text-body h3,
+    .page-reader-content h1, .page-reader-content h2, .page-reader-content h3 {
+      font-family: var(--font-reading-sans, 'Inter', sans-serif);
+      font-weight: 700;
+      line-height: 1.25;
+      color: var(--text-main);
+      margin-top: 1.8em;
+      margin-bottom: 0.8em;
     }
 
     /* Load More Button */
@@ -614,7 +726,7 @@
       border: 1px solid var(--border-color);
       border-radius: var(--radius-lg);
       width: 100%;
-      max-width: 860px;
+      max-width: 880px;
       max-height: 92vh;
       display: flex;
       flex-direction: column;
@@ -633,7 +745,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      background: #1e293b;
+      background: var(--bg-card);
     }
 
     .modal-close-btn {
@@ -676,21 +788,12 @@
       align-items: center;
       justify-content: space-between;
       gap: 10px;
-      background: #1e293b;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
       padding: 10px 16px;
       border-radius: 10px;
       margin-bottom: 20px;
       flex-wrap: wrap;
-    }
-
-    .reader-content-box {
-      font-size: 1.05rem;
-      line-height: 1.8;
-      color: #e5e7eb;
-    }
-
-    .reader-content-box p {
-      margin-bottom: 16px;
     }
 
     /* Audio Player Bar (Leitor por voz global da página) */
@@ -849,6 +952,17 @@
       </div>
 
       <div class="controls-group">
+        <div class="theme-selector-wrap" style="display:flex; gap:4px; background:var(--bg-card); padding:3px; border-radius:10px; border:1px solid var(--border-color);" title="Modo Ergonomico de Leitura (Guia AOA/WCAG)">
+          <button class="theme-btn" id="theme-btn-sepia" onclick="setReadingTheme('sepia')" title="Modo Sépia Creme (Ideal para Leitura Prolongada)" style="padding:5px 10px; font-size:0.775rem; border-radius:6px; border:none; cursor:pointer; background:#FBF0D9; color:#2B2B2B; font-weight:700;">🌾 Sépia</button>
+          <button class="theme-btn" id="theme-btn-light" onclick="setReadingTheme('light-soft')" title="Modo Claro Suave" style="padding:5px 10px; font-size:0.775rem; border-radius:6px; border:none; cursor:pointer; background:#F8F9FA; color:#2D3748; font-weight:700;">☀️ Claro</button>
+          <button class="theme-btn" id="theme-btn-dark" onclick="setReadingTheme('dark-soft')" title="Modo Escuro Suave" style="padding:5px 10px; font-size:0.775rem; border-radius:6px; border:none; cursor:pointer; background:#18181B; color:#E4E4E7; font-weight:700;">🌙 Escuro</button>
+        </div>
+
+        <button class="btn btn-secondary" id="btn-toggle-hide-read" onclick="toggleHideReadFilter()" title="Alternar matérias lidas">
+          <i class="fa-solid fa-eye-slash"></i>
+          <span id="hide-read-label">Ocultar Lidas</span>
+        </button>
+
         <button class="btn btn-accent" id="btn-page-reader" onclick="togglePageReaderMode()">
           <i class="fa-solid fa-book-open-reader"></i>
           <span id="page-reader-label">Modo Leitura da Página</span>
@@ -1018,14 +1132,15 @@
   </div>
 
   <script>
-    // DEFAULT FEEDS PRESET
+    // DEFAULT FEEDS PRESET (Portais Diretos de Alta Confiabilidade)
     const DEFAULT_FEEDS = [
-      { id: 'f1', name: 'Google News Brasil', category: 'Brasil', url: 'https://news.google.com/rss?hl=pt-BR&gl=BR&ceid=BR:pt-419' },
-      { id: 'f2', name: 'BBC Brasil', category: 'Brasil', url: 'https://feeds.bbci.co.uk/portuguese/rss.xml' },
-      { id: 'f3', name: 'Google News Mundo', category: 'Mundo', url: 'https://news.google.com/rss/headlines/section/topic/WORLD?hl=pt-BR&gl=BR&ceid=BR:pt-419' },
-      { id: 'f4', name: 'Google News Economia', category: 'Economia', url: 'https://news.google.com/rss/headlines/section/topic/BUSINESS?hl=pt-BR&gl=BR&ceid=BR:pt-419' },
-      { id: 'f5', name: 'Google News Tecnologia', category: 'Tecnologia', url: 'https://news.google.com/rss/headlines/section/topic/TECHNOLOGY?hl=pt-BR&gl=BR&ceid=BR:pt-419' },
-      { id: 'f6', name: 'Google News Esportes', category: 'Esportes', url: 'https://news.google.com/rss/headlines/section/topic/SPORTS?hl=pt-BR&gl=BR&ceid=BR:pt-419' }
+      { id: 'f1', name: 'G1 Brasil', category: 'Brasil', url: 'https://g1.globo.com/rss/g1/brasil/' },
+      { id: 'f2', name: 'BBC News Brasil', category: 'Mundo', url: 'https://feeds.bbci.co.uk/portuguese/rss.xml' },
+      { id: 'f3', name: 'G1 Economia', category: 'Economia', url: 'https://g1.globo.com/rss/g1/economia/' },
+      { id: 'f4', name: 'G1 Tecnologia', category: 'Tecnologia', url: 'https://g1.globo.com/rss/g1/tecnologia/' },
+      { id: 'f5', name: 'GE Globo Esportes', category: 'Esportes', url: 'https://ge.globo.com/rss/ge/' },
+      { id: 'f6', name: 'UOL Notícias', category: 'Brasil', url: 'https://rss.uol.com.br/feed/noticias.xml' },
+      { id: 'f7', name: 'CNN Brasil', category: 'Brasil', url: 'https://www.cnnbrasil.com.br/feed/' }
     ];
 
     const CATEGORY_IMAGES = {
@@ -1037,10 +1152,56 @@
       default: "https://images.unsplash.com/photo-1504711434969-e33886168f5c?auto=format&fit=crop&w=600&q=80"
     };
 
-    // State Variables
-    let feeds = JSON.parse(localStorage.getItem('portal_rss_feeds') || 'null') || DEFAULT_FEEDS;
+    // Cache de Textos Extraídos de Artigos Completo (Persistência)
+    let extractedTextsCache = {};
+    try {
+      extractedTextsCache = JSON.parse(localStorage.getItem('extracted_texts_cache') || '{}');
+    } catch(e) {
+      extractedTextsCache = {};
+    }
+
+    function getCachedExtractedText(url) {
+      if (!url) return null;
+      return extractedTextsCache[url] || null;
+    }
+
+    function saveExtractedTextToCache(url, paragraphs, engineName) {
+      if (!url || !paragraphs || paragraphs.length === 0) return;
+      extractedTextsCache[url] = {
+        paragraphs: paragraphs,
+        engine: engineName,
+        timestamp: Date.now()
+      };
+      try {
+        localStorage.setItem('extracted_texts_cache', JSON.stringify(extractedTextsCache));
+      } catch(e) {
+        console.warn('Cache quota exceeded:', e);
+      }
+    }
+
+    // State Variables & Automatic Feed Migration
+    let storedFeeds = JSON.parse(localStorage.getItem('portal_rss_feeds') || 'null');
+    if (!storedFeeds || !Array.isArray(storedFeeds) || storedFeeds.some(f => f.url && f.url.includes('news.google.com'))) {
+      storedFeeds = DEFAULT_FEEDS;
+      localStorage.setItem('portal_rss_feeds', JSON.stringify(DEFAULT_FEEDS));
+    }
+    let feeds = storedFeeds;
     let articles = [];
+    
+    // Cache de matérias em sessionStorage para carregamento em 0ms no refresh
+    try {
+      const cached = sessionStorage.getItem('cached_news_articles');
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          articles = parsed.map(a => ({ ...a, pubDate: new Date(a.pubDate) }));
+        }
+      }
+    } catch(e) {}
+
     let savedArticleGuids = JSON.parse(localStorage.getItem('saved_articles') || '[]');
+    let readArticleGuids = JSON.parse(localStorage.getItem('read_articles') || '[]');
+    let hideReadArticles = JSON.parse(localStorage.getItem('hide_read_articles') || 'false');
     let currentCategory = 'all';
     let searchQuery = '';
     let isPageReaderMode = false;
@@ -1061,7 +1222,16 @@
 
     document.addEventListener('DOMContentLoaded', () => {
       updateDateDisplay();
+      initHeaderButtonsState();
       renderCategoriesBar();
+      
+      if (articles.length > 0) {
+        renderNews();
+        renderTicker();
+      } else {
+        renderSkeletonGrid();
+      }
+
       fetchNews();
 
       document.addEventListener('keydown', (e) => {
@@ -1072,6 +1242,35 @@
         }
       });
     });
+
+    function renderSkeletonGrid() {
+      if (!mainContent) return;
+      let skeletons = `<div class="news-grid">`;
+      for (let i = 0; i < 6; i++) {
+        skeletons += `
+          <div class="news-card" style="opacity: 0.6; pointer-events: none;">
+            <div class="card-img-wrap" style="background: rgba(30,41,59,0.8); display:flex; align-items:center; justify-content:center;">
+              <i class="fa-solid fa-newspaper spin-icon spinning" style="font-size:2rem; color:var(--accent-cyan);"></i>
+            </div>
+            <div class="card-body">
+              <div style="height:14px; width:40%; background:rgba(255,255,255,0.1); border-radius:4px; margin-bottom:10px;"></div>
+              <div style="height:22px; width:90%; background:rgba(255,255,255,0.15); border-radius:4px; margin-bottom:8px;"></div>
+              <div style="height:22px; width:75%; background:rgba(255,255,255,0.15); border-radius:4px; margin-bottom:12px;"></div>
+              <div style="height:14px; width:100%; background:rgba(255,255,255,0.08); border-radius:4px;"></div>
+            </div>
+          </div>
+        `;
+      }
+      skeletons += `</div>`;
+      mainContent.innerHTML = skeletons;
+    }
+
+    function initHeaderButtonsState() {
+      const hideBtn = document.getElementById('btn-toggle-hide-read');
+      const hideLabel = document.getElementById('hide-read-label');
+      if (hideBtn) hideBtn.classList.toggle('active-hide', hideReadArticles);
+      if (hideLabel) hideLabel.textContent = hideReadArticles ? 'Ocultando Lidas' : 'Ocultar Lidas';
+    }
 
     function saveFeedsState() {
       localStorage.setItem('portal_rss_feeds', JSON.stringify(feeds));
@@ -1093,7 +1292,8 @@
         html += `<button class="cat-btn ${currentCategory === cat ? 'active' : ''}" onclick="selectCategory('${escapeHtml(cat)}')">${escapeHtml(cat)}</button>`;
       });
 
-      html += `<button class="cat-btn ${currentCategory === 'salvos' ? 'active' : ''}" onclick="selectCategory('salvos')"><i class="fa-solid fa-bookmark"></i> Salvos</button>`;
+      html += `<button class="cat-btn ${currentCategory === 'salvos' ? 'active' : ''}" onclick="selectCategory('salvos')"><i class="fa-solid fa-bookmark"></i> Salvos (${savedArticleGuids.length})</button>`;
+      html += `<button class="cat-btn ${currentCategory === 'lidas' ? 'active' : ''}" onclick="selectCategory('lidas')"><i class="fa-solid fa-check-double"></i> Lidas (${readArticleGuids.length})</button>`;
       html += `<button class="add-theme-btn" onclick="openModal('add-theme-modal')"><i class="fa-solid fa-plus"></i> Novo Tema</button>`;
 
       categoriesWrapper.innerHTML = html;
@@ -1104,6 +1304,16 @@
       visibleCount = 12;
       renderCategoriesBar();
       renderNews();
+    }
+
+    function parseSafeDate(dateStr) {
+      if (!dateStr) return new Date();
+      if (dateStr instanceof Date) return isNaN(dateStr.getTime()) ? new Date() : dateStr;
+      
+      let formattedStr = String(dateStr).trim().replace(/^(\d{4}-\d{2}-\d{2})\s+(\d{2}:\d{2})/, '$1T$2');
+      let d = new Date(formattedStr);
+      if (isNaN(d.getTime())) d = new Date(dateStr);
+      return isNaN(d.getTime()) ? new Date() : d;
     }
 
     async function fetchNews(isManual = false) {
@@ -1121,12 +1331,12 @@
 
             return (data.items || []).map((item, index) => ({
               id: `${feed.id}-${index}`,
-              guid: item.guid || item.link,
+              guid: item.guid || item.link || `${feed.id}-${index}`,
               title: item.title,
               description: item.description || '',
               content: item.content || item.description || '',
               link: item.link,
-              pubDate: new Date(item.pubDate || Date.now()),
+              pubDate: parseSafeDate(item.pubDate),
               category: feed.category,
               source: feed.name || 'Portal',
               cleanTitle: cleanNewsTitle(item.title),
@@ -1139,8 +1349,20 @@
 
         const results = await Promise.all(fetchPromises);
         let allItems = results.flat();
-        allItems.sort((a, b) => b.pubDate - a.pubDate);
+
+        allItems.sort((a, b) => {
+          const timeA = a.pubDate && !isNaN(a.pubDate.getTime()) ? a.pubDate.getTime() : 0;
+          const timeB = b.pubDate && !isNaN(b.pubDate.getTime()) ? b.pubDate.getTime() : 0;
+          return timeB - timeA;
+        });
+
         articles = filterDuplicates(allItems);
+
+        if (articles.length > 0) {
+          try {
+            sessionStorage.setItem('cached_news_articles', JSON.stringify(articles));
+          } catch(e) {}
+        }
 
         renderNews();
         renderTicker();
@@ -1154,6 +1376,7 @@
     }
 
     function cleanNewsTitle(title) {
+      if (!title) return 'Notícia Sem Título';
       if (title.includes(' - ')) {
         const parts = title.split(' - ');
         parts.pop();
@@ -1162,12 +1385,47 @@
       return title;
     }
 
+    // Gerador de Imagens Sintetizadas por IA (Pollinations AI Engine)
+    function generateAiImageUrl(title, category) {
+      const safeTitle = (title || 'noticia').replace(/[^\w\s\u00C0-\u024F]/gi, ' ').slice(0, 80);
+      const safeCat = category || 'geral';
+      const prompt = `editorial news illustration about ${safeCat}: ${safeTitle}`;
+      const seed = Math.abs(hashString(title || 'noticia'));
+      return `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=800&height=450&nologo=true&seed=${seed}`;
+    }
+
+    function hashString(str) {
+      if (!str) return 12345;
+      let hash = 0;
+      for (let i = 0; i < str.length; i++) {
+        hash = (hash << 5) - hash + str.charCodeAt(i);
+        hash |= 0;
+      }
+      return hash;
+    }
+
     function extractThumbnail(item, categoryKey) {
-      if (item.thumbnail && item.thumbnail.startsWith('http')) return item.thumbnail;
-      if (item.enclosure && item.enclosure.link && item.enclosure.link.startsWith('http')) return item.enclosure.link;
-      const imgMatch = item.description && item.description.match(/<img[^>]+src=["']([^"']+)["']/i);
-      if (imgMatch && imgMatch[1]) return imgMatch[1];
-      return CATEGORY_IMAGES[categoryKey] || CATEGORY_IMAGES.default;
+      if (!item) return generateAiImageUrl('noticia', categoryKey || 'geral');
+
+      let url = null;
+      if (item.thumbnail && typeof item.thumbnail === 'string' && item.thumbnail.startsWith('http')) url = item.thumbnail;
+      else if (item.enclosure && item.enclosure.link && typeof item.enclosure.link === 'string' && item.enclosure.link.startsWith('http')) url = item.enclosure.link;
+      else if (item.description) {
+        const imgMatch = item.description.match(/<img[^>]+src=["']([^"']+)["']/i);
+        if (imgMatch && imgMatch[1]) url = imgMatch[1];
+      }
+
+      if (url) {
+        // Upgrade de Resolução Seguro para Imagens Reais (mantém integridade de URLs do G1/BBC/UOL)
+        url = url
+          .replace(/=s\d+[-c]*/gi, '=s800')
+          .replace(/=w\d+-h\d+[-c]*/gi, '=w800-h450-p-k-no-nu')
+          .replace(/\/ws\/\d+\//gi, '/ws/800/');
+        return url;
+      }
+
+      // Se NÃO houver imagem no RSS do portal, gera imagem por IA equivalente ao assunto!
+      return generateAiImageUrl(item.title || '', item.category || categoryKey || 'geral');
     }
 
     function filterDuplicates(items) {
@@ -1194,8 +1452,14 @@
     function getFilteredArticles() {
       let filtered = articles;
 
+      if (hideReadArticles) {
+        filtered = filtered.filter(a => !readArticleGuids.includes(a.guid));
+      }
+
       if (currentCategory === 'salvos') {
         filtered = articles.filter(a => savedArticleGuids.includes(a.guid));
+      } else if (currentCategory === 'lidas') {
+        filtered = articles.filter(a => readArticleGuids.includes(a.guid));
       } else if (currentCategory !== 'all') {
         filtered = articles.filter(a => a.category.toLowerCase() === currentCategory.toLowerCase());
       }
@@ -1219,7 +1483,7 @@
           <div class="empty-state">
             <i class="fa-regular fa-newspaper"></i>
             <h3>Nenhuma notícia encontrada</h3>
-            <p>Selecione outra categoria ou gerencie seus portais RSS.</p>
+            <p>Selecione outra categoria, altere a busca ou ative/desative a opção de ocultar lidas.</p>
           </div>
         `;
         return;
@@ -1231,22 +1495,32 @@
         let readerHtml = `<div class="page-reader-layout">`;
         
         itemsToDisplay.forEach((article, idx) => {
-          const bodyContent = formatFullText(article.content || article.description);
+          const cached = getCachedExtractedText(article.link);
+          const bodyContent = cached && cached.paragraphs && cached.paragraphs.length > 0
+            ? cached.paragraphs.map(p => p.startsWith('<h3') ? p : `<p style="margin-bottom:16px;">${p}</p>`).join('')
+            : formatFullText(article.content || article.description);
+          const isRead = readArticleGuids.includes(article.guid);
+
           readerHtml += `
-            <article class="page-reader-article">
+            <article class="page-reader-article ${isRead ? 'is-read' : ''}">
               <div class="card-meta">
                 <span class="card-source"><i class="fa-solid fa-newspaper"></i> ${escapeHtml(article.source)}</span>
                 <span>•</span>
                 <span>${escapeHtml(article.category)}</span>
                 <span>•</span>
                 <span>${formatRelativeTime(article.pubDate)}</span>
+                ${isRead ? '<span style="color:#10b981; font-weight:700; font-size:0.75rem;">• <i class="fa-solid fa-check"></i> Lida</span>' : ''}
+                ${cached ? '<span style="color:#34d399; font-weight:700; font-size:0.75rem;">• <i class="fa-solid fa-bolt"></i> Extração Salva</span>' : ''}
               </div>
               <h2>${escapeHtml(article.cleanTitle)}</h2>
-              ${article.thumbnail ? `<img src="${article.thumbnail}" style="width:100%; max-height:380px; object-fit:cover; border-radius:12px; margin: 12px 0;" loading="lazy">` : ''}
+              ${article.thumbnail ? `<img src="${article.thumbnail}" style="width:100%; max-height:380px; object-fit:cover; border-radius:12px; margin: 12px 0;" loading="lazy" onerror="this.onerror=null; this.src=generateAiImageUrl('${escapeHtml(article.cleanTitle)}', '${escapeHtml(article.category)}');">` : ''}
               <div class="page-reader-content">${bodyContent}</div>
               <div style="margin-top: 16px; display: flex; gap: 10px;">
-                <button class="btn btn-secondary" onclick="fetchFullArticleText('${article.link}', 'reader-body-${idx}')">
-                  <i class="fa-solid fa-wand-magic-sparkles"></i> Buscar Artigo Completo
+                <button class="btn btn-secondary" onclick="fetchFullArticleText('${article.link}', 'reader-body-${idx}', true, '${escapeHtml(article.cleanTitle)}', '${escapeHtml(article.source)}')">
+                  <i class="fa-solid ${cached ? 'fa-rotate' : 'fa-wand-magic-sparkles'}"></i> ${cached ? 'Re-extrair Texto' : 'Buscar Artigo Completo'}
+                </button>
+                <button class="btn btn-secondary" style="font-size:0.8rem;" onclick="toggleReadArticle('${escapeHtml(article.guid)}')">
+                  <i class="fa-solid ${isRead ? 'fa-eye-slash' : 'fa-eye'}"></i> ${isRead ? 'Desmarcar Lida' : 'Ocultar / Marcar Lida'}
                 </button>
                 <a href="${article.link}" target="_blank" rel="noopener noreferrer" class="btn btn-primary" style="font-size:0.8rem; color:#ffffff !important;">
                   Site Original <i class="fa-solid fa-external-link"></i>
@@ -1271,13 +1545,20 @@
 
       itemsToDisplay.forEach((article) => {
         const isSaved = savedArticleGuids.includes(article.guid);
+        const isRead = readArticleGuids.includes(article.guid);
+        const cached = getCachedExtractedText(article.link);
         const snippetText = stripHtml(article.description || '').slice(0, 150) + '...';
 
         gridHtml += `
-          <article class="news-card">
+          <article class="news-card ${isRead ? 'is-read' : ''}">
             <div class="card-img-wrap" onclick="openReaderModal('${article.id}')">
-              <img class="card-img" src="${article.thumbnail}" alt="Thumb" loading="lazy" decoding="async" onerror="this.src='${CATEGORY_IMAGES.default}'">
+              <img class="card-img" src="${article.thumbnail}" alt="Thumb" loading="lazy" decoding="async" onerror="this.onerror=null; this.src=generateAiImageUrl('${escapeHtml(article.cleanTitle)}', '${escapeHtml(article.category)}');">
               <span class="card-tag">${escapeHtml(article.category)}</span>
+              
+              <button class="read-btn ${isRead ? 'read' : ''}" onclick="event.stopPropagation(); toggleReadArticle('${escapeHtml(article.guid)}')" title="${isRead ? 'Matéria Lida (Clique para desmarcar)' : 'Marcar como Lida e Ocultar'}">
+                <i class="fa-solid ${isRead ? 'fa-eye-slash' : 'fa-eye'}"></i>
+              </button>
+
               <button class="bookmark-btn ${isSaved ? 'saved' : ''}" onclick="event.stopPropagation(); toggleSaveArticle('${escapeHtml(article.guid)}')" title="Salvar">
                 <i class="fa-${isSaved ? 'solid' : 'regular'} fa-bookmark"></i>
               </button>
@@ -1287,12 +1568,17 @@
                 <span class="card-source">${escapeHtml(article.source)}</span>
                 <span>•</span>
                 <span>${formatRelativeTime(article.pubDate)}</span>
+                ${isRead ? '<span style="color:#10b981; font-weight:700; font-size:0.75rem;">• <i class="fa-solid fa-check"></i> Lida</span>' : ''}
+                ${cached ? '<span style="color:#34d399; font-weight:700; font-size:0.75rem;">• <i class="fa-solid fa-bolt"></i> Extraída</span>' : ''}
               </div>
               <h2 class="card-title" onclick="openReaderModal('${article.id}')">${escapeHtml(article.cleanTitle)}</h2>
               <p class="card-snippet">${escapeHtml(snippetText)}</p>
               <div class="card-footer">
                 <button class="btn-read-modal" onclick="openReaderModal('${article.id}')">
-                  <i class="fa-solid fa-book-open"></i> Ler Matéria
+                  <i class="fa-solid fa-book-open"></i> ${cached ? 'Ler Completa (Salva)' : 'Ler Matéria'}
+                </button>
+                <button class="btn btn-secondary" style="padding:4px 9px; font-size:0.775rem;" onclick="event.stopPropagation(); toggleReadArticle('${escapeHtml(article.guid)}')" title="Ocultar notícia lida">
+                  <i class="fa-solid ${isRead ? 'fa-eye-slash' : 'fa-eye'}"></i> ${isRead ? 'Desmarcar' : 'Ocultar'}
                 </button>
                 <a href="${article.link}" target="_blank" rel="noopener noreferrer" style="color:var(--accent-cyan); font-size:0.85rem; text-decoration:none;" title="Abrir no site original">
                   <i class="fa-solid fa-arrow-up-right-from-square"></i>
@@ -1333,7 +1619,11 @@
     }
 
     function renderTicker() {
-      if (articles.length === 0) return;
+      if (!tickerContent) return;
+      if (!articles || articles.length === 0) {
+        tickerContent.innerHTML = `<span class="ticker-item"><i class="fa-solid fa-rss"></i> Buscando notícias dos portais...</span>`;
+        return;
+      }
       const topNews = articles.slice(0, 8);
       const itemsHtml = topNews.map((a) => `
         <span class="ticker-item" onclick="openReaderModal('${a.id}')">
@@ -1343,18 +1633,78 @@
       tickerContent.innerHTML = itemsHtml + itemsHtml;
     }
 
-    // LEITOR MODAL & EXTRATOR DE MATÉRIA COMPLETA
+    // Controle do Sistema de Leitura Ergonomica (Guia AOA / WCAG)
+    let currentReadingTheme = localStorage.getItem('portal_reading_theme') || 'dark-soft';
+    let currentReadingFont = localStorage.getItem('portal_reading_font') || 'serif';
+
+    function setReadingTheme(themeName) {
+      currentReadingTheme = themeName;
+      document.body.setAttribute('data-theme', themeName);
+      localStorage.setItem('portal_reading_theme', themeName);
+      
+      const sepiaBtn = document.getElementById('theme-btn-sepia');
+      const lightBtn = document.getElementById('theme-btn-light');
+      const darkBtn = document.getElementById('theme-btn-dark');
+
+      if (sepiaBtn) sepiaBtn.style.border = themeName === 'sepia' ? '2px solid var(--accent-primary)' : 'none';
+      if (lightBtn) lightBtn.style.border = themeName === 'light-soft' ? '2px solid var(--accent-primary)' : 'none';
+      if (darkBtn) darkBtn.style.border = themeName === 'dark-soft' ? '2px solid var(--accent-primary)' : 'none';
+
+      const labels = {
+        'sepia': 'Modo Sépia Creme Ativado (Ideal para Leitura Prolongada)',
+        'light-soft': 'Modo Claro Suave Ativado',
+        'dark-soft': 'Modo Escuro Suave Ativado'
+      };
+      showToast(labels[themeName] || 'Tema de Leitura Atualizado');
+    }
+
+    function toggleReadingFontFamily() {
+      currentReadingFont = currentReadingFont === 'serif' ? 'sans' : 'serif';
+      localStorage.setItem('portal_reading_font', currentReadingFont);
+      
+      const boxes = document.querySelectorAll('.reader-content-box, .extracted-text-body, .page-reader-content');
+      boxes.forEach(box => {
+        box.style.fontFamily = currentReadingFont === 'serif' 
+          ? "var(--font-reading-serif, Georgia, serif)" 
+          : "var(--font-reading-sans, Inter, sans-serif)";
+      });
+
+      const label = document.getElementById('font-family-label');
+      if (label) label.textContent = currentReadingFont === 'serif' ? 'Serifada' : 'Sans-serif';
+      showToast(currentReadingFont === 'serif' ? 'Fonte Serifada (Georgia / Leitura Longa)' : 'Fonte Sans-serif (Inter)');
+    }
+
+    function changeFontSize(delta) {
+      readerFontSize = Math.min(Math.max(readerFontSize + delta, 0.85), 1.6);
+      const boxes = document.querySelectorAll('.reader-content-box, .extracted-text-body, .page-reader-content');
+      boxes.forEach(b => b.style.fontSize = `${readerFontSize}rem`);
+      const ind = document.getElementById('font-size-indicator');
+      if (ind) ind.textContent = `${Math.round((readerFontSize / 1.05) * 100)}%`;
+    }
+
+    // LEITOR MODAL & EXTRATOR DE MATÉRIA COMPLETA ERGONÔMICO
     function openReaderModal(identifier) {
       const article = typeof identifier === 'number' 
         ? articles[identifier] 
         : articles.find(a => a.id === identifier || a.guid === identifier);
       if (!article) return;
 
+      // Marcar automaticamente como lida ao abrir
+      if (!readArticleGuids.includes(article.guid)) {
+        readArticleGuids.push(article.guid);
+        localStorage.setItem('read_articles', JSON.stringify(readArticleGuids));
+        renderCategoriesBar();
+      }
+
+      const cached = getCachedExtractedText(article.link);
+      const bodyText = cached && cached.paragraphs && cached.paragraphs.length > 0
+        ? cached.paragraphs.map(p => p.startsWith('<h3') ? p : `<p>${p}</p>`).join('')
+        : formatFullText(article.content || article.description);
+
       const body = document.getElementById('reader-modal-body');
-      const initialText = formatFullText(article.content || article.description);
 
       body.innerHTML = `
-        ${article.thumbnail ? `<img class="reader-hero-img" src="${article.thumbnail}">` : ''}
+        ${article.thumbnail ? `<img class="reader-hero-img" src="${article.thumbnail}" onerror="this.onerror=null; this.src=generateAiImageUrl('${escapeHtml(article.cleanTitle)}', '${escapeHtml(article.category)}');">` : ''}
         
         <div class="card-meta" style="margin-bottom:12px;">
           <span class="card-source"><i class="fa-solid fa-newspaper"></i> ${escapeHtml(article.source)}</span>
@@ -1362,37 +1712,81 @@
           <span>${escapeHtml(article.category)}</span>
           <span>•</span>
           <span>${formatRelativeTime(article.pubDate)}</span>
+          <span style="color:#10b981; font-weight:700;">• <i class="fa-solid fa-check"></i> Lida</span>
+          ${cached ? '<span style="color:var(--accent-primary); font-weight:700;">• <i class="fa-solid fa-bolt"></i> Extração Salva em Cache</span>' : ''}
         </div>
 
-        <h1 style="font-family:Outfit; font-size:1.75rem; margin-bottom:16px;">${escapeHtml(article.cleanTitle)}</h1>
+        <h1 style="font-family:var(--font-reading-sans); font-size:1.85rem; font-weight:800; line-height:1.25; margin-bottom:18px; color:var(--text-main);">${escapeHtml(article.cleanTitle)}</h1>
 
+        <!-- Barra de Ferramentas de Leitura Ergonomica (WCAG) -->
         <div class="reader-toolbar">
           <div style="display:flex; gap:6px; align-items:center;">
-            <button class="btn btn-secondary" style="padding:4px 8px;" onclick="changeFontSize(-0.1)">A-</button>
-            <button class="btn btn-secondary" style="padding:4px 8px;" onclick="changeFontSize(0.1)">A+</button>
+            <button class="btn btn-secondary" style="padding:4px 10px; font-size:0.8rem;" onclick="changeFontSize(-0.08)" title="Diminuir tamanho da fonte">A-</button>
+            <span id="font-size-indicator" style="font-size:0.8rem; font-weight:700; color:var(--text-muted); padding:0 4px;">100%</span>
+            <button class="btn btn-secondary" style="padding:4px 10px; font-size:0.8rem;" onclick="changeFontSize(0.08)" title="Aumentar tamanho da fonte">A+</button>
+            <button class="btn btn-secondary" style="padding:4px 10px; font-size:0.8rem;" onclick="toggleReadingFontFamily()" title="Alternar entre fonte Serifada (Georgia) e Sans-serif (Inter)">
+              <i class="fa-solid fa-font"></i> <span id="font-family-label">${currentReadingFont === 'serif' ? 'Serifada' : 'Sans-serif'}</span>
+            </button>
           </div>
 
-          <button class="btn btn-secondary" style="padding:6px 12px; font-size:0.8rem;" onclick="fetchFullArticleText('${article.link}', 'modal-extracted-body')">
-            <i class="fa-solid fa-wand-magic-sparkles"></i> Extrair Texto Completo do Site
-          </button>
+          <div style="display:flex; gap:4px; align-items:center;" title="Alternar Esquema de Cores Ergonomico (Guia AOA)">
+            <button onclick="setReadingTheme('sepia')" style="padding:4px 8px; font-size:0.75rem; background:#FBF0D9; color:#2B2B2B; border-radius:6px; font-weight:700; border:none; cursor:pointer;">Sépia</button>
+            <button onclick="setReadingTheme('light-soft')" style="padding:4px 8px; font-size:0.75rem; background:#F8F9FA; color:#2D3748; border-radius:6px; font-weight:700; border:none; cursor:pointer;">Claro</button>
+            <button onclick="setReadingTheme('dark-soft')" style="padding:4px 8px; font-size:0.75rem; background:#18181B; color:#E4E4E7; border-radius:6px; font-weight:700; border:none; cursor:pointer;">Escuro</button>
+          </div>
 
-          <button class="btn btn-secondary" style="padding:6px 12px; font-size:0.8rem;" onclick="speakArticleById('${article.id}')">
-            <i class="fa-solid fa-volume-high"></i> Ouvir
-          </button>
+          <div style="display:flex; gap:6px; align-items:center;">
+            ${cached ? `
+              <button class="btn btn-secondary" style="padding:6px 12px; font-size:0.8rem; background:rgba(16,185,129,0.15); color:var(--accent-primary); border-color:rgba(16,185,129,0.3);" onclick="fetchFullArticleText('${article.link}', 'modal-extracted-body', true, '${escapeHtml(article.cleanTitle)}', '${escapeHtml(article.source)}')">
+                <i class="fa-solid fa-rotate"></i> Texto Salvo (Re-extrair)
+              </button>
+            ` : `
+              <button class="btn btn-secondary" style="padding:6px 12px; font-size:0.8rem;" onclick="fetchFullArticleText('${article.link}', 'modal-extracted-body', false, '${escapeHtml(article.cleanTitle)}', '${escapeHtml(article.source)}')">
+                <i class="fa-solid fa-wand-magic-sparkles"></i> Extrair Texto Completo
+              </button>
+            `}
+
+            <button class="btn btn-secondary" style="padding:6px 12px; font-size:0.8rem;" onclick="speakArticleById('${article.id}')">
+              <i class="fa-solid fa-volume-high"></i> Ouvir
+            </button>
+          </div>
         </div>
 
-        <div class="reader-content-box" id="modal-extracted-body" style="font-size: ${readerFontSize}rem;">
-          ${initialText}
+        <div class="reader-content-box" id="modal-extracted-body" style="font-size: ${readerFontSize}rem; font-family: ${currentReadingFont === 'serif' ? 'var(--font-reading-serif)' : 'var(--font-reading-sans)'};">
+          ${bodyText}
         </div>
 
-        <div style="margin-top:24px; padding-top:16px; border-top:1px solid var(--border-color); display:flex; justify-content:space-between;">
+        <div style="margin-top:28px; padding-top:16px; border-top:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center;">
           <a href="${article.link}" target="_blank" rel="noopener noreferrer" class="btn btn-primary" style="font-size:0.85rem; color:#ffffff !important;">
             Abrir Notícia no Site Original <i class="fa-solid fa-external-link"></i>
           </a>
+          <span style="font-size:0.775rem; color:var(--text-muted);"><i class="fa-solid fa-eye"></i> Padrão de Leitura Ergonomico 65ch (AOA/WCAG)</span>
         </div>
       `;
 
       openModal('reader-modal');
+    }
+
+    function toggleReadArticle(guid) {
+      if (readArticleGuids.includes(guid)) {
+        readArticleGuids = readArticleGuids.filter(g => g !== guid);
+        showToast('Notícia desmarcada como lida.');
+      } else {
+        readArticleGuids.push(guid);
+        showToast('Notícia marcada como lida!');
+      }
+      localStorage.setItem('read_articles', JSON.stringify(readArticleGuids));
+      renderCategoriesBar();
+      renderNews();
+    }
+
+    function toggleHideReadFilter() {
+      hideReadArticles = !hideReadArticles;
+      localStorage.setItem('hide_read_articles', JSON.stringify(hideReadArticles));
+      
+      initHeaderButtonsState();
+      showToast(hideReadArticles ? 'Matérias lidas ocultadas da lista!' : 'Exibindo todas as matérias.');
+      renderNews();
     }
 
     function speakArticleById(id) {
@@ -1400,6 +1794,7 @@
       if (article) speakArticle(article.cleanTitle);
     }
 
+    // Extrator de Texto com Filtragem Estrita de Lixo Visual, Ícones e Links de Redes Sociais
     function parseJinaMarkdown(text) {
       if (!text) return [];
       const lines = text.split('\n');
@@ -1408,34 +1803,116 @@
       for (let line of lines) {
         line = line.trim();
         if (!line) continue;
-        if (line.startsWith('Title:') || line.startsWith('URL Source:') || line.startsWith('Published Time:') || line.startsWith('Markdown Content:')) continue;
-        if (line.startsWith('![') || line.startsWith('Crédito') || line.startsWith('Legenda da foto')) continue;
-        if (line.startsWith('* ') || line.startsWith('Tempo de leitura:') || line.startsWith('Author,') || line.startsWith('Role,')) continue;
-        
+
+        const lower = line.toLowerCase();
+
+        // 1. Filtrar totalmente qualquer linha com tag de imagem markdown, URLs de imagem (.jpg, .png, glbimg), ícones, logos, botões ou links vazios de portais
+        if (/^!\[.*?\]/i.test(line) || /!\[.*?\]\(.*?\)/i.test(line) || /!Image/i.test(line) || /!Icone/i.test(line) || /^!/i.test(line)) continue;
+        if (/\.(jpg|jpeg|png|webp|gif)(\?.*)?$/i.test(line) || /https?:\/\/.*?\.(jpg|jpeg|png|webp|gif)/i.test(line) || lower.includes('glbimg.com') || lower.includes('internal_photos')) continue;
+        if (/^\[\s*\]\(.*?\)/i.test(line) || (/^\[.*?\]\(https?:\/\/.*?\)/i.test(line) && line.length < 55)) continue;
+        if (lower.includes('whatsapp') || lower.includes('facebook') || lower.includes('instagram') || lower.includes('twitter') || lower.includes('youtube') || lower.includes('x.com')) continue;
+        if (lower.includes('siga no') || lower.includes('grupo do whatsapp') || lower.includes('canal do whatsapp') || lower.includes('edição digital') || lower.includes('o melhor conteúdo') || lower.includes('icone')) continue;
+        if (lower.startsWith('title:') || lower.startsWith('url source:') || lower.startsWith('published time:') || lower.startsWith('markdown content:')) continue;
+        if (lower.startsWith('crédito') || lower.startsWith('legenda') || lower.startsWith('foto:') || lower.startsWith('imagem:') || lower.startsWith('fonte:')) continue;
+        if (lower.startsWith('* ') || lower.startsWith('tempo de leitura:') || lower.startsWith('author,') || lower.startsWith('role,')) continue;
+
         if (line.startsWith('#')) {
           const headingText = line.replace(/^#+\s*/, '').trim();
           if (headingText && !headingText.toLowerCase().includes('mais clicadas') && !headingText.toLowerCase().includes('redes sociais') && !headingText.toLowerCase().includes('nossos parceiros')) {
-            paragraphs.push(`<h3 style="font-family:Outfit; margin:16px 0 8px; color:var(--accent-cyan); font-size:1.15rem;">${escapeHtml(headingText)}</h3>`);
+            paragraphs.push(`<h3 style="font-family:var(--font-reading-sans); margin:1.8em 0 0.8em; color:var(--accent-primary); font-weight:700; font-size:1.3rem;">${escapeHtml(headingText)}</h3>`);
           }
           continue;
         }
 
-        let cleanText = line.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1');
+        // 2. Limpar qualquer resquício de links markdown [texto](url "titulo") ou [](url "titulo")
+        let cleanText = line;
+        cleanText = cleanText.replace(/!\[.*?\]\(.*?\)/gi, '');
+        cleanText = cleanText.replace(/\[\s*\]\(.*?\)/gi, '');
+        cleanText = cleanText.replace(/\[([^\]]*)\]\((https?:\/\/[^\s\)\"]+)(?:\s+[\"\'].*?[\"\'])?\)/gi, (match, anchorText) => {
+          const trimmedAnchor = (anchorText || '').trim();
+          if (!trimmedAnchor || trimmedAnchor.startsWith('http') || trimmedAnchor.toLowerCase().includes('folha') || trimmedAnchor.toLowerCase().includes('uol') || trimmedAnchor.toLowerCase().includes('globo')) {
+            return '';
+          }
+          return trimmedAnchor;
+        });
+
         cleanText = cleanText.replace(/[*_~`]/g, '').trim();
 
-        if (cleanText.length > 30 && !cleanText.toLowerCase().includes('direitos reservados') && !cleanText.toLowerCase().includes('politica de privacidade') && !cleanText.toLowerCase().includes('termos de uso')) {
+        const cleanLower = cleanText.toLowerCase();
+
+        // 3. Regras estritas de inclusão: apenas frases reais de notícia com mais de 30 caracteres
+        if (
+          cleanText.length > 30 && 
+          !cleanLower.includes('direitos reservados') && 
+          !cleanLower.includes('politica de privacidade') && 
+          !cleanLower.includes('termos de uso') &&
+          !cleanLower.includes('cookies') &&
+          !cleanLower.includes('inscreva-se') &&
+          !cleanLower.includes('compartilhe') &&
+          !cleanLower.includes('todos os direitos')
+        ) {
           paragraphs.push(escapeHtml(cleanText));
         }
       }
       return paragraphs;
     }
 
-    // Extrator Avançado de Notícias (Jina Reader AI Engine + Proxies CORS + RSS Fallback)
-    async function fetchFullArticleText(articleUrl, targetContainerId) {
+    // Extrator Avançado de Notícias (Jina Reader AI Engine + Direct Resolver + Proxies CORS + Cache)
+    async function fetchFullArticleText(articleUrl, targetContainerId, forceRefresh = false, articleTitle = '', articleSource = '') {
       const container = document.getElementById(targetContainerId);
       if (!container) return;
 
-      const originalHost = new URL(articleUrl).hostname;
+      let targetUrl = articleUrl;
+      const initialHost = new URL(articleUrl).hostname;
+
+      // RESOLVER DE LINKS DO GOOGLE NEWS: Se for link redirecionado do Google News, localiza a URL direta do portal de origem!
+      if (initialHost.includes('news.google.com')) {
+        try {
+          const query = `${articleTitle || ''} ${articleSource || ''}`.trim();
+          if (query) {
+            const resolverUrl = `https://r.jina.ai/https://html.duckduckgo.com/html/?q=${encodeURIComponent(query)}`;
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 6000);
+            const res = await fetch(resolverUrl, { signal: controller.signal });
+            clearTimeout(timeoutId);
+
+            if (res.ok) {
+              const text = await res.text();
+              const uddgMatch = text.match(/uddg=(https%3A%2F%2F[^&\s\)\"]+)/);
+              if (uddgMatch) {
+                const decoded = decodeURIComponent(uddgMatch[1]);
+                if (decoded && !decoded.includes('google.com')) {
+                  targetUrl = decoded;
+                }
+              }
+            }
+          }
+        } catch (err) {
+          console.warn('Erro no resolver do Google News:', err);
+        }
+      }
+
+      const currentHost = new URL(targetUrl).hostname;
+
+      // SE JÁ ESTIVER SALVO NO CACHE E NÃO FOR FORÇADO RE-EXTRAIR
+      if (!forceRefresh) {
+        const cached = getCachedExtractedText(targetUrl) || getCachedExtractedText(articleUrl);
+        if (cached && cached.paragraphs && cached.paragraphs.length > 0) {
+          container.innerHTML = `
+            <div style="background:rgba(16,185,129,0.15); border:1px solid rgba(16,185,129,0.4); padding:10px 14px; border-radius:10px; margin:16px 0; color:#10b981; font-size:0.85rem; display:flex; align-items:center; justify-content:space-between;">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <i class="fa-solid fa-bolt" style="color:#34d399;"></i>
+                <span><strong>Texto completo extraído carregado do cache!</strong> (${cached.paragraphs.length} blocos via ${escapeHtml(cached.engine || 'Cache')})</span>
+              </div>
+              <button class="btn btn-secondary" style="padding:2px 8px; font-size:0.75rem;" onclick="fetchFullArticleText('${escapeHtml(targetUrl)}', '${targetContainerId}', true, '${escapeHtml(articleTitle)}', '${escapeHtml(articleSource)}')">Re-extrair</button>
+            </div>
+            <div class="extracted-text-body" style="font-size:1.05rem; line-height:1.8; color:#e5e7eb;">
+              ${cached.paragraphs.map(p => p.startsWith('<h3') ? p : `<p style="margin-bottom:16px;">${p}</p>`).join('')}
+            </div>
+          `;
+          return;
+        }
+      }
 
       container.innerHTML = `
         <div class="extraction-progress-box" id="extract-box">
@@ -1446,7 +1923,7 @@
           <div class="progress-track">
             <div class="progress-fill" id="extract-progress-bar" style="width: 15%;"></div>
           </div>
-          <div class="progress-subtext" id="extract-subtext">Conectando ao motor de leitura para ${escapeHtml(originalHost)}...</div>
+          <div class="progress-subtext" id="extract-subtext">Conectando ao motor de leitura para ${escapeHtml(currentHost)}...</div>
         </div>
       `;
 
@@ -1505,13 +1982,13 @@
       for (let i = 0; i < engines.length; i++) {
         const engine = engines[i];
         const percent = 20 + Math.round(((i + 1) / engines.length) * 65);
-        updateProgress(percent, `Extraindo via ${engine.name}...`, `Obtendo matéria de ${escapeHtml(originalHost)} (Método ${i + 1}/${engines.length})`);
+        updateProgress(percent, `Extraindo via ${engine.name}...`, `Obtendo matéria de ${escapeHtml(currentHost)} (Método ${i + 1}/${engines.length})`);
 
         try {
           const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 7500);
+          const timeoutId = setTimeout(() => controller.abort(), 8000);
 
-          const rawResult = await engine.fetch(articleUrl, controller.signal);
+          const rawResult = await engine.fetch(targetUrl, controller.signal);
           clearTimeout(timeoutId);
 
           if (!rawResult || rawResult.length < 150) continue;
@@ -1553,33 +2030,38 @@
       updateProgress(100, 'Extração Concluída!', 'Apresentando matéria na tela...');
 
       if (extractedParagraphs.length > 0) {
+        // SALVA AUTOMATICAMENTE NO CACHE LOCALSTORAGE
+        saveExtractedTextToCache(articleUrl, extractedParagraphs, successEngineName);
+        saveExtractedTextToCache(targetUrl, extractedParagraphs, successEngineName);
+
         setTimeout(() => {
           container.innerHTML = `
-            <div style="background:rgba(16,185,129,0.15); border:1px solid rgba(16,185,129,0.4); padding:12px 16px; border-radius:12px; margin:16px 0; color:#10b981; font-size:0.875rem; display:flex; align-items:center; gap:12px;">
-              <i class="fa-solid fa-circle-check" style="font-size:1.3rem;"></i>
-              <div>
-                <strong>Matéria completa extraída com sucesso de ${escapeHtml(originalHost)}!</strong>
-                <div style="font-size:0.775rem; color:var(--text-muted);">${extractedParagraphs.length} blocos de conteúdo obtidos via ${escapeHtml(successEngineName)}.</div>
+            <div style="background:rgba(16,185,129,0.15); border:1px solid rgba(16,185,129,0.4); padding:12px 16px; border-radius:12px; margin:16px 0; color:#10b981; font-size:0.875rem; display:flex; align-items:center; justify-content:space-between;">
+              <div style="display:flex; align-items:center; gap:12px;">
+                <i class="fa-solid fa-circle-check" style="font-size:1.3rem;"></i>
+                <div>
+                  <strong>Matéria completa extraída e salva de ${escapeHtml(currentHost)}!</strong>
+                  <div style="font-size:0.775rem; color:var(--text-muted);">${extractedParagraphs.length} blocos obtidos via ${escapeHtml(successEngineName)}. Salvo para acesso instantâneo futuro.</div>
+                </div>
               </div>
             </div>
             <div class="extracted-text-body" style="font-size:1.05rem; line-height:1.8; color:#e5e7eb;">
               ${extractedParagraphs.map(p => p.startsWith('<h3') ? p : `<p style="margin-bottom:16px;">${p}</p>`).join('')}
             </div>
           `;
-          showToast('Matéria completa extraída!');
+          showToast('Matéria extraída e salva no cache!');
         }, 300);
       } else {
-        // FALLBACK INTELIGENTE: Se os servidores falharem, exibe os dados do feed RSS formatados sem erro de bloqueio
         setTimeout(() => {
           container.innerHTML = `
             <div style="background:rgba(59,130,246,0.15); border:1px solid rgba(59,130,246,0.3); padding:14px; border-radius:12px; margin:16px 0; color:#60a5fa; font-size:0.875rem;">
               <div style="display:flex; align-items:center; gap:10px; margin-bottom:6px; font-weight:700;">
                 <i class="fa-solid fa-circle-info" style="font-size:1.1rem;"></i> Exibindo Conteúdo Completo do Feed RSS
               </div>
-              <p style="color:var(--text-muted); font-size:0.825rem;">O portal ${escapeHtml(originalHost)} requer abertura direta no navegador para certas imagens. Você também pode visitar a página oficial:</p>
+              <p style="color:var(--text-muted); font-size:0.825rem;">O portal ${escapeHtml(currentHost)} requer navegação direta para este artigo. Você pode ler a matéria completa diretamente no site de origem:</p>
               <div style="margin-top:10px;">
-                <a href="${escapeHtml(articleUrl)}" target="_blank" rel="noopener noreferrer" class="btn btn-primary" style="font-size:0.8rem; color:#ffffff !important;">
-                  Abrir no site original (${escapeHtml(originalHost)}) <i class="fa-solid fa-external-link"></i>
+                <a href="${escapeHtml(targetUrl)}" target="_blank" rel="noopener noreferrer" class="btn btn-primary" style="font-size:0.88rem; color:#ffffff !important;">
+                  Abrir Notícia em ${escapeHtml(currentHost)} <i class="fa-solid fa-external-link"></i>
                 </a>
               </div>
             </div>
@@ -1594,9 +2076,9 @@
       const tmp = document.createElement('div');
       tmp.innerHTML = html;
       
-      // Remove scripts, styles
-      tmp.querySelectorAll('script, style, iframe, button').forEach(el => el.remove());
-      return tmp.innerHTML;
+      // Remove scripts, estilos, IFrames, botões E TODAS as imagens/figuras do corpo do texto (para manter apenas a foto de capa no topo!)
+      tmp.querySelectorAll('script, style, iframe, button, img, picture, figure, svg, video').forEach(el => el.remove());
+      return tmp.innerHTML.replace(/<img[^>]*>/gi, '');
     }
 
     function changeFontSize(delta) {
@@ -1797,12 +2279,24 @@
       showToast(`Novo tema "${name}" adicionado!`);
     }
 
+    let activeModalCount = 0;
+
     function openModal(id) {
-      document.getElementById(id).classList.add('active');
+      const modal = document.getElementById(id);
+      if (!modal) return;
+      modal.classList.add('active');
+      activeModalCount++;
+      document.body.style.overflow = 'hidden';
     }
 
     function closeModal(id) {
-      document.getElementById(id).classList.remove('active');
+      const modal = document.getElementById(id);
+      if (!modal) return;
+      modal.classList.remove('active');
+      activeModalCount = Math.max(0, activeModalCount - 1);
+      if (activeModalCount === 0) {
+        document.body.style.overflow = '';
+      }
     }
 
     function handleSearch() {
