@@ -14,7 +14,7 @@
 
   <style>
     /* ==========================================================================
-       SISTEMA DE LEITURA ERGONÔMICA (Guia AOA/AAO/WCAG 2.1 & ISO 9241-307)
+       SISTEMA DE LEITURA ERGONÔMICA & ALINHAMENTO UI/UX (8pt Grid & WCAG 2.1)
        ========================================================================== */
 
     /* Tema Padrão do Sistema: Escuro Suave (Soft Dark Mode) */
@@ -35,12 +35,18 @@
       --text-muted: #A1A1AA;
       --text-btn-sec: #E4E4E7;
       --border-color: #27272A;
+      /* Sistema 8pt Grid (Múltiplos Racionais de 8px conforme guia de UX/UI) */
+      --grid-8: 8px;
+      --grid-16: 16px;
+      --grid-24: 24px;
+      --grid-32: 32px;
+      --grid-48: 48px;
       --radius-sm: 8px;
-      --radius-md: 14px;
-      --radius-lg: 20px;
+      --radius-md: 16px;
+      --radius-lg: 24px;
       --font-reading-serif: 'Georgia', 'Merriweather', 'Source Serif Pro', serif;
       --font-reading-sans: 'Inter', 'Plus Jakarta Sans', system-ui, sans-serif;
-      --font-size-body: 1.1875rem; /* ~19px conforme o guia */
+      --font-size-body: 1.1875rem; /* ~19px conforme guia ergonomico */
       --line-height-body: 1.58;
       --max-measure: 65ch; /* ~65 caracteres por linha conforme WCAG */
       --transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease, transform 0.2s ease;
@@ -106,7 +112,7 @@
     /* Top Ticker ultra-leve */
     .ticker-wrap {
       width: 100%;
-      background: #0f172a;
+      background: var(--bg-card);
       border-bottom: 1px solid var(--border-color);
       display: flex;
       align-items: center;
@@ -167,22 +173,22 @@
       100% { transform: translate3d(-50%, 0, 0); }
     }
 
-    /* Container */
+    /* Container Estrutural (Grid de Alinhamento 12 Colunas) */
     .container {
       max-width: 1340px;
       margin: 0 auto;
-      padding: 20px 16px 60px;
+      padding: var(--grid-24) var(--grid-16) var(--grid-48);
     }
 
-    /* Header */
+    /* Header com Alinhamento na Linha de Base (Baseline Grid) */
     header {
       display: flex;
       flex-wrap: wrap;
       justify-content: space-between;
       align-items: center;
-      gap: 16px;
-      margin-bottom: 24px;
-      padding: 20px 24px;
+      gap: var(--grid-16);
+      margin-bottom: var(--grid-24);
+      padding: var(--grid-24);
       background: var(--bg-card);
       border: 1px solid var(--border-color);
       border-radius: var(--radius-md);
@@ -191,7 +197,7 @@
     .brand {
       display: flex;
       align-items: center;
-      gap: 14px;
+      gap: var(--grid-16);
     }
 
     .brand-icon {
@@ -210,7 +216,7 @@
       font-family: 'Outfit', sans-serif;
       font-size: 1.75rem;
       font-weight: 800;
-      color: #ffffff;
+      color: var(--text-main);
       letter-spacing: -0.5px;
     }
 
