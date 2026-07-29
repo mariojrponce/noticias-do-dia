@@ -18,11 +18,13 @@
        ========================================================================== */
 
     /* Tema Padrão do Sistema: Escuro Suave (Soft Dark Mode) */
-    :root, body, body[data-theme="dark-soft"] {
+    :root, :root[data-theme="dark-soft"], body[data-theme="dark-soft"] {
       --bg-dark: #18181B;
       --bg-card: #222228;
       --bg-card-hover: #2C2C34;
       --bg-modal: #1F1F24;
+      --bg-btn-sec: #2C2C34;
+      --bg-btn-sec-hover: #3F3F46;
       --accent-primary: #6366F1;
       --accent-glow: #818CF8;
       --accent-cyan: #38BDF8;
@@ -31,6 +33,7 @@
       --accent-red: #ef4444;
       --text-main: #E4E4E7;
       --text-muted: #A1A1AA;
+      --text-btn-sec: #E4E4E7;
       --border-color: #27272A;
       --radius-sm: 8px;
       --radius-md: 14px;
@@ -43,12 +46,14 @@
       --transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease, transform 0.2s ease;
     }
 
-    /* Tema Sépia / Creme (Opcional no Leitor) */
-    body[data-theme="sepia"] {
+    /* Tema Sépia / Creme */
+    :root[data-theme="sepia"], body[data-theme="sepia"] {
       --bg-dark: #FBF0D9;
       --bg-card: #F4ECD8;
       --bg-card-hover: #EFE4C9;
       --bg-modal: #F7EAD0;
+      --bg-btn-sec: #E6D7B8;
+      --bg-btn-sec-hover: #D8C6A3;
       --accent-primary: #8C531B;
       --accent-glow: #A06224;
       --accent-cyan: #784717;
@@ -57,15 +62,18 @@
       --accent-red: #b91c1c;
       --text-main: #2B2B2B;
       --text-muted: #6B5640;
+      --text-btn-sec: #2B2B2B;
       --border-color: #E6D7B8;
     }
 
     /* Tema Claro Suave (Soft Light Mode) */
-    body[data-theme="light-soft"] {
+    :root[data-theme="light-soft"], body[data-theme="light-soft"] {
       --bg-dark: #F8F9FA;
       --bg-card: #FFFFFF;
       --bg-card-hover: #EDF2F7;
       --bg-modal: #FFFFFF;
+      --bg-btn-sec: #E2E8F0;
+      --bg-btn-sec-hover: #CBD5E0;
       --accent-primary: #2B6CB0;
       --accent-glow: #3182CE;
       --accent-cyan: #2C5282;
@@ -74,6 +82,7 @@
       --accent-red: #dc2626;
       --text-main: #2D3748;
       --text-muted: #4A5568;
+      --text-btn-sec: #2D3748;
       --border-color: #E2E8F0;
     }
 
@@ -270,14 +279,14 @@
     }
 
     .btn-secondary, a.btn-secondary, a.btn-secondary:visited {
-      background: #1e293b;
-      color: #ffffff !important;
+      background: var(--bg-btn-sec);
+      color: var(--text-btn-sec) !important;
       border: 1px solid var(--border-color);
     }
 
     .btn-secondary:hover, a.btn-secondary:hover {
-      background: #334155;
-      color: #ffffff !important;
+      background: var(--bg-btn-sec-hover);
+      color: var(--text-main) !important;
     }
 
     .btn-accent, a.btn-accent, a.btn-accent:visited {
@@ -303,7 +312,8 @@
 
     /* Extraction Progress Box */
     .extraction-progress-box {
-      background: #1e293b;
+      background: var(--bg-card);
+      color: var(--text-main);
       border: 1px solid var(--border-color);
       border-radius: var(--radius-md);
       padding: 18px 20px;
@@ -377,7 +387,7 @@
 
     .cat-btn {
       padding: 7px 16px;
-      background: #1e293b;
+      background: var(--bg-card);
       border: 1px solid var(--border-color);
       border-radius: 18px;
       color: var(--text-muted);
@@ -389,14 +399,14 @@
     }
 
     .cat-btn:hover {
-      background: #334155;
+      background: var(--bg-card-hover);
       color: var(--text-main);
     }
 
     .cat-btn.active {
       background: var(--accent-primary);
       border-color: var(--accent-primary);
-      color: white;
+      color: #ffffff !important;
     }
 
     .add-theme-btn {
@@ -802,14 +812,15 @@
       bottom: 20px;
       left: 50%;
       transform: translateX(-50%) translateY(120px);
-      background: #1e293b;
+      background: var(--bg-card);
+      color: var(--text-main);
       border: 1px solid var(--accent-primary);
       border-radius: 30px;
       padding: 10px 24px;
       display: flex;
       align-items: center;
       gap: 16px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
       z-index: 900;
       transition: transform 0.3s ease;
     }
@@ -823,6 +834,7 @@
       width: 100%;
       border-collapse: collapse;
       margin-bottom: 20px;
+      color: var(--text-main);
     }
 
     .feed-manager-table th,
@@ -831,6 +843,7 @@
       text-align: left;
       border-bottom: 1px solid var(--border-color);
       font-size: 0.85rem;
+      color: var(--text-main);
     }
 
     .feed-manager-table th {
@@ -844,7 +857,8 @@
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 14px;
-      background: #1e293b;
+      background: var(--bg-card);
+      color: var(--text-main);
       padding: 16px;
       border-radius: var(--radius-md);
       border: 1px solid var(--border-color);
@@ -869,7 +883,7 @@
 
     .form-group input {
       padding: 8px 12px;
-      background: #0f172a;
+      background: var(--bg-card);
       border: 1px solid var(--border-color);
       border-radius: var(--radius-sm);
       color: var(--text-main);
@@ -882,12 +896,12 @@
       position: fixed;
       bottom: 24px;
       right: 24px;
-      background: #1e293b;
+      background: var(--bg-card);
       border: 1px solid var(--accent-primary);
       color: var(--text-main);
       padding: 10px 18px;
       border-radius: var(--radius-sm);
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
       display: flex;
       align-items: center;
       gap: 10px;
@@ -1049,11 +1063,16 @@
         <button class="modal-close-btn" onclick="closeModal('feed-manager-modal')"><i class="fa-solid fa-xmark"></i></button>
       </div>
       <div class="modal-body">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 8px;">
           <p style="font-size: 0.85rem; color: var(--text-muted);">Edite, insira ou exclua os portais pesquisados.</p>
-          <button class="btn btn-secondary" onclick="restoreDefaultFeeds()" style="padding: 5px 10px; font-size: 0.775rem;">
-            <i class="fa-solid fa-rotate-left"></i> Restaurar Padrões
-          </button>
+          <div style="display: flex; gap: 8px;">
+            <button class="btn btn-secondary" onclick="restoreDefaultFeeds()" style="padding: 5px 10px; font-size: 0.775rem;">
+              <i class="fa-solid fa-rotate-left"></i> Restaurar Portais
+            </button>
+            <button class="btn btn-danger" onclick="promptFactoryReset()" style="padding: 5px 10px; font-size: 0.775rem;">
+              <i class="fa-solid fa-trash-can"></i> Limpar Cache & Reset de Fábrica
+            </button>
+          </div>
         </div>
 
         <table class="feed-manager-table">
@@ -1095,6 +1114,36 @@
             <button type="submit" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Salvar Portal</button>
           </div>
         </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONFIRM FACTORY RESET MODAL -->
+  <div class="modal-overlay" id="confirm-reset-modal">
+    <div class="modal-container" style="max-width: 520px;">
+      <div class="modal-header" style="background: rgba(239, 68, 68, 0.15); border-bottom: 1px solid rgba(239, 68, 68, 0.3);">
+        <h3 style="color: var(--accent-red); font-size: 1.15rem;"><i class="fa-solid fa-triangle-exclamation"></i> Confirmar Reset de Fábrica</h3>
+        <button class="modal-close-btn" onclick="closeModal('confirm-reset-modal')"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body" style="padding: 22px; text-align: left;">
+        <p style="font-size: 0.95rem; margin-bottom: 12px; color: var(--text-main); font-weight: 700;">
+          Deseja apagar todo o cache e restaurar as configurações de fábrica?
+        </p>
+        <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 10px; padding: 14px; margin-bottom: 18px;">
+          <p style="font-size: 0.825rem; color: var(--text-muted); margin-bottom: 8px; font-weight: 600;">Esta ação irá apagar permanentemente do seu navegador:</p>
+          <ul style="font-size: 0.825rem; color: var(--text-muted); margin-left: 18px; line-height: 1.6;">
+            <li>Textos completos de notícias extraídos e salvos em cache;</li>
+            <li>Histórico de matérias lidas e notícias salvas;</li>
+            <li>Feeds e portais de notícias personalizados;</li>
+            <li>Preferências visuais e temas configurados.</li>
+          </ul>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 10px;">
+          <button class="btn btn-secondary" onclick="closeModal('confirm-reset-modal')">Cancelar</button>
+          <button class="btn btn-danger" onclick="executeFactoryReset()">
+            <i class="fa-solid fa-trash-can"></i> Sim, Apagar Tudo e Resetar
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -1201,7 +1250,7 @@
 
     let savedArticleGuids = JSON.parse(localStorage.getItem('saved_articles') || '[]');
     let readArticleGuids = JSON.parse(localStorage.getItem('read_articles') || '[]');
-    let hideReadArticles = JSON.parse(localStorage.getItem('hide_read_articles') || 'false');
+    let hideReadArticles = JSON.parse(localStorage.getItem('hide_read_articles') || 'true');
     let currentCategory = 'all';
     let searchQuery = '';
     let isPageReaderMode = false;
@@ -1450,20 +1499,27 @@
     }
 
     function getFilteredArticles() {
-      let filtered = articles;
+      let filtered = [...articles];
 
-      if (hideReadArticles) {
-        filtered = filtered.filter(a => !readArticleGuids.includes(a.guid));
-      }
-
+      // 1. Filtragem por Categoria / Estado Especial
       if (currentCategory === 'salvos') {
-        filtered = articles.filter(a => savedArticleGuids.includes(a.guid));
+        filtered = filtered.filter(a => savedArticleGuids.includes(a.guid));
       } else if (currentCategory === 'lidas') {
-        filtered = articles.filter(a => readArticleGuids.includes(a.guid));
-      } else if (currentCategory !== 'all') {
-        filtered = articles.filter(a => a.category.toLowerCase() === currentCategory.toLowerCase());
+        // Se o usuário clicar na aba especial "Lidas", exibe EXCLUSIVAMENTE matérias já lidas
+        filtered = filtered.filter(a => readArticleGuids.includes(a.guid));
+      } else {
+        // Para "Todas" ou qualquer tópico (Economia, Tecnologia, Brasil, Esportes, etc.):
+        // Oculta notícias lidas se hideReadArticles estiver ativo
+        if (hideReadArticles) {
+          filtered = filtered.filter(a => !readArticleGuids.includes(a.guid));
+        }
+
+        if (currentCategory !== 'all') {
+          filtered = filtered.filter(a => a.category.toLowerCase() === currentCategory.toLowerCase());
+        }
       }
 
+      // 2. Busca por Texto
       if (searchQuery.trim() !== '') {
         const q = searchQuery.toLowerCase();
         filtered = filtered.filter(a => 
@@ -1471,6 +1527,7 @@
           a.description.toLowerCase().includes(q)
         );
       }
+
       return filtered;
     }
 
@@ -1640,6 +1697,7 @@
     function setReadingTheme(themeName) {
       currentReadingTheme = themeName;
       document.body.setAttribute('data-theme', themeName);
+      document.documentElement.setAttribute('data-theme', themeName);
       localStorage.setItem('portal_reading_theme', themeName);
       
       const sepiaBtn = document.getElementById('theme-btn-sepia');
@@ -2265,6 +2323,23 @@
         fetchNews(true);
         showToast('Portais padrão restaurados!');
       }
+    }
+
+    // RESET DE FÁBRICA COMPLETO (Limpar LocalStorage, Cache e Restaurar Configurações Originais)
+    function promptFactoryReset() {
+      openModal('confirm-reset-modal');
+    }
+
+    function executeFactoryReset() {
+      try {
+        localStorage.clear();
+        sessionStorage.clear();
+      } catch (e) {}
+
+      showToast('Apagando cache e restaurando padrões de fábrica...');
+      setTimeout(() => {
+        location.reload();
+      }, 400);
     }
 
     function handleCreateTheme(e) {
