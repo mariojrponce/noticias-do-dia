@@ -1254,7 +1254,8 @@
       { id: 'f4', name: 'G1 Tecnologia', category: 'Tecnologia', url: 'https://g1.globo.com/rss/g1/tecnologia/' },
       { id: 'f5', name: 'GE Globo Esportes', category: 'Esportes', url: 'https://ge.globo.com/rss/ge/' },
       { id: 'f6', name: 'UOL Notícias', category: 'Brasil', url: 'https://rss.uol.com.br/feed/noticias.xml' },
-      { id: 'f7', name: 'CNN Brasil', category: 'Brasil', url: 'https://www.cnnbrasil.com.br/feed/' }
+      { id: 'f7', name: 'CNN Brasil', category: 'Brasil', url: 'https://www.cnnbrasil.com.br/feed/' },
+      { id: 'f8', name: 'ANEFAC', category: 'Economia', url: 'https://www.anefac.org.br/?post_type=radar-anefac&feed=rss2' }
     ];
 
     const CATEGORY_IMAGES = {
@@ -1298,6 +1299,9 @@
     if (!storedFeeds || !Array.isArray(storedFeeds) || storedFeeds.some(f => f.url && f.url.includes('news.google.com'))) {
       storedFeeds = DEFAULT_FEEDS;
       localStorage.setItem('portal_rss_feeds', JSON.stringify(DEFAULT_FEEDS));
+    } else if (!storedFeeds.some(f => f.url && f.url.includes('anefac.org.br'))) {
+      storedFeeds = storedFeeds.concat(DEFAULT_FEEDS.filter(f => f.url.includes('anefac.org.br')));
+      localStorage.setItem('portal_rss_feeds', JSON.stringify(storedFeeds));
     }
     let feeds = storedFeeds;
     let articles = [];
