@@ -1252,10 +1252,12 @@
       { id: 'f2', name: 'BBC News Brasil', category: 'Mundo', url: 'https://feeds.bbci.co.uk/portuguese/rss.xml' },
       { id: 'f3', name: 'G1 Economia', category: 'Economia', url: 'https://g1.globo.com/rss/g1/economia/' },
       { id: 'f4', name: 'G1 Tecnologia', category: 'Tecnologia', url: 'https://g1.globo.com/rss/g1/tecnologia/' },
-      { id: 'f5', name: 'GE Globo Esportes', category: 'Esportes', url: 'https://ge.globo.com/rss/ge/' },
       { id: 'f6', name: 'UOL Notícias', category: 'Brasil', url: 'https://rss.uol.com.br/feed/noticias.xml' },
       { id: 'f7', name: 'CNN Brasil', category: 'Brasil', url: 'https://www.cnnbrasil.com.br/feed/' },
-      { id: 'f8', name: 'ANEFAC', category: 'Economia', url: 'https://www.anefac.org.br/?post_type=radar-anefac&feed=rss2' }
+      { id: 'f8', name: 'ANEFAC', category: 'Economia', url: 'https://www.anefac.org.br/?post_type=radar-anefac&feed=rss2' },
+      { id: 'f9', name: 'Agência Brasil - Economia', category: 'Economia', url: 'https://agenciabrasil.ebc.com.br/rss/economia/feed.xml' },
+      { id: 'f10', name: 'Agência Brasil - Internacional', category: 'Mundo', url: 'https://agenciabrasil.ebc.com.br/rss/internacional/feed.xml' },
+      { id: 'f11', name: 'Agência Brasil - Meio Ambiente', category: 'Meio Ambiente', url: 'https://agenciabrasil.ebc.com.br/radioagencia-nacional/rss/meio-ambiente/feed.xml' }
     ];
 
     const CATEGORY_IMAGES = {
@@ -1263,7 +1265,7 @@
       mundo: "https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?auto=format&fit=crop&w=600&q=80",
       economia: "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=600&q=80",
       tecnologia: "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=600&q=80",
-      esportes: "https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=600&q=80",
+      "meio ambiente": "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=600&q=80",
       default: "https://images.unsplash.com/photo-1504711434969-e33886168f5c?auto=format&fit=crop&w=600&q=80"
     };
 
@@ -1299,9 +1301,21 @@
     if (!storedFeeds || !Array.isArray(storedFeeds) || storedFeeds.some(f => f.url && f.url.includes('news.google.com'))) {
       storedFeeds = DEFAULT_FEEDS;
       localStorage.setItem('portal_rss_feeds', JSON.stringify(DEFAULT_FEEDS));
-    } else if (!storedFeeds.some(f => f.url && f.url.includes('anefac.org.br'))) {
-      storedFeeds = storedFeeds.concat(DEFAULT_FEEDS.filter(f => f.url.includes('anefac.org.br')));
-      localStorage.setItem('portal_rss_feeds', JSON.stringify(storedFeeds));
+    } else {
+      let migrated = false;
+      if (!storedFeeds.some(f => f.url && f.url.includes('anefac.org.br'))) {
+        storedFeeds = storedFeeds.concat(DEFAULT_FEEDS.filter(f => f.url.includes('anefac.org.br')));
+        migrated = true;
+      }
+      if (storedFeeds.some(f => f.url && f.url.includes('ge.globo.com'))) {
+        storedFeeds = storedFeeds.filter(f => !(f.url && f.url.includes('ge.globo.com')));
+        migrated = true;
+      }
+      if (!storedFeeds.some(f => f.url && f.url.includes('agenciabrasil.ebc.com.br'))) {
+        storedFeeds = storedFeeds.concat(DEFAULT_FEEDS.filter(f => f.url.includes('agenciabrasil.ebc.com.br')));
+        migrated = true;
+      }
+      if (migrated) localStorage.setItem('portal_rss_feeds', JSON.stringify(storedFeeds));
     }
     let feeds = storedFeeds;
     let articles = [];
@@ -1670,7 +1684,7 @@
         // Se o usuário clicar na aba especial "Lidas", exibe EXCLUSIVAMENTE matérias já lidas
         filtered = filtered.filter(a => readArticleGuids.includes(a.guid));
       } else {
-        // Para "Todas" ou qualquer tópico (Economia, Tecnologia, Brasil, Esportes, etc.):
+        // Para "Todas" ou qualquer tópico (Economia, Tecnologia, Brasil, Mundo, etc.):
         // Oculta notícias lidas se hideReadArticles estiver ativo
         if (hideReadArticles) {
           filtered = filtered.filter(a => !readArticleGuids.includes(a.guid));
