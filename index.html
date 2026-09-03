@@ -2161,7 +2161,7 @@
               </div>
               <button class="btn btn-secondary" style="padding:2px 8px; font-size:0.75rem;" onclick="fetchFullArticleText('${escapeHtml(targetUrl)}', '${targetContainerId}', true, '${escapeHtml(articleTitle)}', '${escapeHtml(articleSource)}')">Re-extrair</button>
             </div>
-            <div class="extracted-text-body" style="font-size:1.05rem; line-height:1.8; color:#e5e7eb;">
+            <div class="extracted-text-body" style="font-size:1.05rem; line-height:1.8;">
               ${cached.paragraphs.map(p => p.startsWith('<h3') ? p : `<p style="margin-bottom:16px;">${p}</p>`).join('')}
             </div>
           `;
@@ -2300,7 +2300,7 @@
                 </div>
               </div>
             </div>
-            <div class="extracted-text-body" style="font-size:1.05rem; line-height:1.8; color:#e5e7eb;">
+            <div class="extracted-text-body" style="font-size:1.05rem; line-height:1.8;">
               ${extractedParagraphs.map(p => p.startsWith('<h3') ? p : `<p style="margin-bottom:16px;">${p}</p>`).join('')}
             </div>
           `;
