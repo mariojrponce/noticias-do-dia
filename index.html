@@ -968,7 +968,8 @@
       .card-body { padding: 14px; }
       .modal-container { max-height: 96vh; border-radius: var(--radius-md); }
       .modal-body { padding: 14px; }
-      .global-audio-bar { width: 94%; padding: 8px 14px; border-radius: 20px; }
+      .global-audio-bar { width: 94%; padding: 8px 14px; border-radius: 20px; flex-wrap: wrap; justify-content: center; }
+      .global-audio-bar select#audio-voice-select { max-width: 120px; }
       .feed-form-grid { grid-template-columns: 1fr; }
     }
 
@@ -1095,15 +1096,16 @@
 
   <!-- GLOBAL AUDIO PLAYER BAR -->
   <div class="global-audio-bar" id="global-audio-bar">
-    <div style="display: flex; align-items: center; gap: 10px;">
+    <div style="display: flex; align-items: center; gap: 10px; min-width: 0;">
       <i class="fa-solid fa-headphones" style="color: var(--accent-cyan);"></i>
-      <span id="audio-status-text" style="font-size: 0.85rem; font-weight: 600; max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Nenhuma notícia em execução</span>
+      <span id="audio-status-text" style="font-size: 0.85rem; font-weight: 600; max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Nenhuma notícia em execução</span>
     </div>
+    <select id="audio-voice-select" onchange="onVoiceChange()" title="Escolher voz de leitura" style="max-width:150px; font-size:0.75rem; padding:5px 6px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-card); color:var(--text-main);"></select>
     <div style="display: flex; gap: 8px;">
-      <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.8rem;" onclick="prevAudioNews()"><i class="fa-solid fa-backward"></i></button>
-      <button class="btn btn-primary" style="padding: 6px 14px; font-size: 0.8rem;" id="btn-audio-play" onclick="toggleAudioPlayback()"><i class="fa-solid fa-play"></i></button>
-      <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.8rem;" onclick="nextAudioNews()"><i class="fa-solid fa-forward"></i></button>
-      <button class="btn btn-secondary" style="padding: 6px 10px; font-size: 0.8rem;" onclick="closeAudioPlayer()"><i class="fa-solid fa-xmark"></i></button>
+      <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.8rem;" onclick="prevAudioNews()" title="Parágrafo anterior"><i class="fa-solid fa-backward"></i></button>
+      <button class="btn btn-primary" style="padding: 6px 14px; font-size: 0.8rem;" id="btn-audio-play" onclick="toggleAudioPlayback()" title="Pausar / Continuar"><i class="fa-solid fa-play"></i></button>
+      <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.8rem;" onclick="nextAudioNews()" title="Pular parágrafo"><i class="fa-solid fa-forward"></i></button>
+      <button class="btn btn-secondary" style="padding: 6px 10px; font-size: 0.8rem;" onclick="closeAudioPlayer()" title="Fechar"><i class="fa-solid fa-xmark"></i></button>
     </div>
   </div>
 
@@ -1343,6 +1345,13 @@
     // Audio Player State
     let audioIndex = 0;
     let isAudioPlaying = false;
+    let audioBarMode = null; // 'single' (uma matéria) ou 'playlist' (todas as notícias em sequência)
+    let speechParagraphs = []; // parágrafos da leitura atual (matéria única ou da playlist)
+    let speechParaIdx = 0;
+    let speechSentences = []; // sentenças do parágrafo atual
+    let speechSentenceIdx = 0;
+    let speechToken = 0; // invalida callbacks de utterances antigas ao pular/parar
+    let availableVoices = [];
 
     // DOM References
     const grid = document.getElementById('news-grid');
@@ -1355,6 +1364,7 @@
     document.addEventListener('DOMContentLoaded', () => {
       updateDateDisplay();
       initHeaderButtonsState();
+      initVoiceEngine();
       renderCategoriesBar();
       
       if (articles.length > 0) {
@@ -2023,29 +2033,31 @@
       renderNews();
     }
 
-    function getArticleTextForSpeech(article) {
-      if (!article) return '';
+    // Retorna a matéria já separada em parágrafos (título + cada parágrafo do corpo),
+    // preservando as quebras para permitir "pular parágrafo" na leitura em voz alta.
+    function getArticleParagraphsForSpeech(article) {
+      if (!article) return [];
       const cached = getCachedExtractedText(article.link);
-      let bodyText = '';
+      let paras = [];
 
       if (cached && cached.paragraphs && cached.paragraphs.length > 0) {
-        bodyText = cached.paragraphs
+        paras = cached.paragraphs
           .map(p => stripHtml(p).trim())
-          .filter(p => p.length > 15 && !p.startsWith('<h3'))
-          .join('. ');
+          .filter(p => p.length > 15 && !p.startsWith('<h3'));
       } else if (article.content || article.description) {
-        bodyText = stripHtml(article.content || article.description);
+        const raw = stripHtml(article.content || article.description);
+        paras = raw.split(/\n+/).map(p => p.trim()).filter(p => p.length > 15);
+        if (paras.length === 0 && raw.trim()) paras = [raw.trim()];
       }
 
-      const fullProse = `${article.cleanTitle}. ${bodyText}`.trim();
-      return fixCorruptedEncoding(fullProse);
+      const all = [article.cleanTitle, ...paras].filter(Boolean).map(p => fixCorruptedEncoding(p));
+      return all;
     }
 
     function speakArticleById(id) {
       const article = articles.find(a => a.id === id || a.guid === id);
       if (article) {
-        const fullText = getArticleTextForSpeech(article);
-        speakArticle(fullText, article.cleanTitle);
+        speakArticle(article);
       }
     }
 
@@ -2342,53 +2354,139 @@
       if (box) box.style.fontSize = `${readerFontSize}rem`;
     }
 
-    function speakArticle(text, shortTitle = '') {
-      if (!('speechSynthesis' in window)) {
-        showToast('Navegador não suporta síntese de voz.');
-        return;
+    // MOTOR DE VOZ: escolhe automaticamente a melhor voz em pt-BR disponível no navegador
+    // (ex.: vozes "Google"/"Natural"/"Online" do Chrome/Edge soam bem mais naturais que a voz padrão do SO).
+    function initVoiceEngine() {
+      if (!('speechSynthesis' in window)) return;
+      loadVoices();
+      window.speechSynthesis.onvoiceschanged = loadVoices;
+    }
+
+    function loadVoices() {
+      const all = window.speechSynthesis.getVoices();
+      if (!all || all.length === 0) return;
+      const ptVoices = all.filter(v => v.lang && v.lang.toLowerCase().startsWith('pt'));
+      availableVoices = ptVoices.length > 0 ? ptVoices : all;
+      populateVoiceSelect();
+    }
+
+    function populateVoiceSelect() {
+      const sel = document.getElementById('audio-voice-select');
+      if (!sel || availableVoices.length === 0) return;
+
+      sel.innerHTML = availableVoices.map(v => `<option value="${escapeHtml(v.voiceURI)}">${escapeHtml(v.name)}</option>`).join('');
+
+      const saved = localStorage.getItem('tts_voice_uri');
+      let toSelect = availableVoices.find(v => v.voiceURI === saved);
+      if (!toSelect) {
+        // Prioriza vozes que costumam soar mais naturais/realistas
+        toSelect = availableVoices.find(v => /google|natural|online|neural|wavenet/i.test(v.name)) || availableVoices[0];
+        if (toSelect) localStorage.setItem('tts_voice_uri', toSelect.voiceURI);
+      }
+      if (toSelect) sel.value = toSelect.voiceURI;
+    }
+
+    function onVoiceChange() {
+      const sel = document.getElementById('audio-voice-select');
+      if (sel && sel.value) {
+        localStorage.setItem('tts_voice_uri', sel.value);
+        showToast('Voz de leitura atualizada!');
+      }
+    }
+
+    function applySelectedVoice(utter) {
+      const uri = localStorage.getItem('tts_voice_uri');
+      const voice = availableVoices.find(v => v.voiceURI === uri);
+      if (voice) {
+        utter.voice = voice;
+        utter.lang = voice.lang;
+      } else {
+        utter.lang = 'pt-BR';
+      }
+      utter.rate = 1.0;
+    }
+
+    function updatePlayButtonIcon() {
+      const playBtn = document.getElementById('btn-audio-play');
+      if (playBtn) playBtn.innerHTML = `<i class="fa-solid fa-${isAudioPlaying ? 'pause' : 'play'}"></i>`;
+    }
+
+    // Motor único de leitura: fala parágrafo por parágrafo (e sentença por sentença dentro dele),
+    // o que permite pausar/continuar e pular para o próximo parágrafo a qualquer momento.
+    let currentSpeechOnFinished = null;
+
+    function startSpeechFromParagraph(paraIdx, onFinished) {
+      const myToken = ++speechToken;
+      currentSpeechOnFinished = onFinished || null;
+      isAudioPlaying = true;
+      updatePlayButtonIcon();
+
+      function speakParagraph(idx) {
+        if (myToken !== speechToken) return;
+        if (idx < 0 || idx >= speechParagraphs.length) {
+          isAudioPlaying = false;
+          updatePlayButtonIcon();
+          if (onFinished) onFinished();
+          return;
+        }
+        speechParaIdx = idx;
+        speechSentences = speechParagraphs[idx].split(/(?<=[.!?])\s+/).filter(s => s.trim().length > 0);
+        speechSentenceIdx = 0;
+        speakSentence();
       }
 
-      window.speechSynthesis.cancel();
-      isAudioPlaying = true;
-
-      const cleanText = fixCorruptedEncoding(text);
-      const sentences = cleanText.split(/(?<=[.!?])\s+/).filter(s => s.trim().length > 0);
-
-      if (sentences.length === 0) return;
-
-      let sentenceIdx = 0;
-      const statusText = document.getElementById('audio-status-text');
-      const playBtn = document.getElementById('btn-audio-play');
-      if (playBtn) playBtn.innerHTML = `<i class="fa-solid fa-pause"></i>`;
-
-      function speakNextSentence() {
-        if (!isAudioPlaying || sentenceIdx >= sentences.length) {
-          isAudioPlaying = false;
-          if (playBtn) playBtn.innerHTML = `<i class="fa-solid fa-play"></i>`;
+      function speakSentence() {
+        if (myToken !== speechToken || !isAudioPlaying) return;
+        if (speechSentenceIdx >= speechSentences.length) {
+          speakParagraph(speechParaIdx + 1);
           return;
         }
 
-        const sentenceText = sentences[sentenceIdx];
-        const utter = new SpeechSynthesisUtterance(sentenceText);
-        utter.lang = 'pt-BR';
-        utter.rate = 1.0;
+        const utter = new SpeechSynthesisUtterance(speechSentences[speechSentenceIdx]);
+        applySelectedVoice(utter);
 
         utter.onend = () => {
-          sentenceIdx++;
-          speakNextSentence();
+          if (myToken !== speechToken) return;
+          speechSentenceIdx++;
+          speakSentence();
         };
 
-        utter.onerror = (e) => {
-          sentenceIdx++;
-          speakNextSentence();
+        utter.onerror = () => {
+          if (myToken !== speechToken) return;
+          speechSentenceIdx++;
+          speakSentence();
         };
 
         window.speechSynthesis.speak(utter);
       }
 
-      if (statusText) statusText.textContent = shortTitle ? `Lendo: ${shortTitle}` : 'Lendo matéria completa...';
-      showToast('Iniciando leitura da matéria completa...');
-      speakNextSentence();
+      speakParagraph(paraIdx);
+    }
+
+    // Leitura de uma única matéria (botão "Ouvir" dentro do leitor)
+    function speakArticle(article) {
+      if (!('speechSynthesis' in window)) {
+        showToast('Navegador não suporta síntese de voz.');
+        return;
+      }
+      const paragraphs = getArticleParagraphsForSpeech(article);
+      if (paragraphs.length === 0) {
+        showToast('Não há texto para ler nesta matéria.');
+        return;
+      }
+
+      window.speechSynthesis.cancel();
+      audioBarMode = 'single';
+      speechParagraphs = paragraphs;
+
+      const bar = document.getElementById('global-audio-bar');
+      if (bar) bar.classList.add('active');
+
+      const statusText = document.getElementById('audio-status-text');
+      if (statusText) statusText.textContent = `Lendo: ${article.cleanTitle}`;
+
+      showToast('Iniciando leitura da matéria...');
+      startSpeechFromParagraph(0);
     }
 
     // REPRODUTOR GLOBAL DE ÁUDIO (Ouvir Notícias em Sequência)
@@ -2396,6 +2494,7 @@
       const bar = document.getElementById('global-audio-bar');
       bar.classList.toggle('active');
       if (bar.classList.contains('active')) {
+        audioBarMode = 'playlist';
         audioIndex = 0;
         playCurrentAudioNews();
       } else {
@@ -2413,86 +2512,97 @@
       if (activeArticles.length === 0) return;
       if (audioIndex >= activeArticles.length) audioIndex = 0;
       const article = activeArticles[audioIndex];
+
+      audioBarMode = 'playlist';
+      const paragraphs = getArticleParagraphsForSpeech(article);
+
       const statusText = document.getElementById('audio-status-text');
-      const playBtn = document.getElementById('btn-audio-play');
-
       if (statusText) statusText.textContent = `[${audioIndex + 1}/${activeArticles.length}] ${article.cleanTitle}`;
-      if (playBtn) playBtn.innerHTML = `<i class="fa-solid fa-pause"></i>`;
-
-      const fullText = getArticleTextForSpeech(article);
 
       if (!('speechSynthesis' in window)) return;
-      window.speechSynthesis.cancel();
-      isAudioPlaying = true;
 
-      const cleanText = fixCorruptedEncoding(fullText);
-      const sentences = cleanText.split(/(?<=[.!?])\s+/).filter(s => s.trim().length > 0);
-      let sentenceIdx = 0;
-
-      function speakSentenceInList() {
-        if (!isAudioPlaying) return;
-        if (sentenceIdx >= sentences.length) {
-          // Quando terminar esta matéria, passa para a próxima notícia da lista!
-          if (audioIndex < activeArticles.length - 1) {
-            audioIndex++;
-            playCurrentAudioNews();
-          } else {
-            isAudioPlaying = false;
-            if (playBtn) playBtn.innerHTML = `<i class="fa-solid fa-play"></i>`;
-          }
-          return;
+      if (paragraphs.length === 0) {
+        // Sem texto para ler: pula para a próxima notícia da lista
+        if (audioIndex < activeArticles.length - 1) {
+          audioIndex++;
+          playCurrentAudioNews();
+        } else {
+          isAudioPlaying = false;
+          updatePlayButtonIcon();
         }
-
-        const sentenceText = sentences[sentenceIdx];
-        const utter = new SpeechSynthesisUtterance(sentenceText);
-        utter.lang = 'pt-BR';
-        utter.rate = 1.0;
-
-        utter.onend = () => {
-          sentenceIdx++;
-          speakSentenceInList();
-        };
-
-        utter.onerror = () => {
-          sentenceIdx++;
-          speakSentenceInList();
-        };
-
-        window.speechSynthesis.speak(utter);
+        return;
       }
 
-      speakSentenceInList();
+      window.speechSynthesis.cancel();
+      speechParagraphs = paragraphs;
+
+      startSpeechFromParagraph(0, () => {
+        // Ao terminar esta matéria, passa para a próxima notícia da lista
+        if (audioIndex < activeArticles.length - 1) {
+          audioIndex++;
+          playCurrentAudioNews();
+        } else {
+          isAudioPlaying = false;
+          updatePlayButtonIcon();
+        }
+      });
     }
 
     function toggleAudioPlayback() {
+      if (!('speechSynthesis' in window)) return;
       if (isAudioPlaying) {
         window.speechSynthesis.pause();
         isAudioPlaying = false;
-        document.getElementById('btn-audio-play').innerHTML = `<i class="fa-solid fa-play"></i>`;
-      } else {
+        updatePlayButtonIcon();
+      } else if (window.speechSynthesis.paused) {
         window.speechSynthesis.resume();
         isAudioPlaying = true;
-        document.getElementById('btn-audio-play').innerHTML = `<i class="fa-solid fa-pause"></i>`;
+        updatePlayButtonIcon();
+      } else if (speechParagraphs.length > 0) {
+        // Nada pausado (ex.: leitura tinha terminado) - recomeça do parágrafo atual
+        window.speechSynthesis.cancel();
+        startSpeechFromParagraph(speechParaIdx, currentSpeechOnFinished);
       }
     }
 
+    // Pula para o próximo parágrafo da matéria atual; ao acabar os parágrafos, avança
+    // para a próxima notícia (apenas no modo playlist "Ouvir Notícias").
     function nextAudioNews() {
-      if (audioIndex < articles.length - 1) {
-        audioIndex++;
-        playCurrentAudioNews();
+      if (speechParagraphs.length === 0) return;
+      if (speechParaIdx + 1 < speechParagraphs.length) {
+        window.speechSynthesis.cancel();
+        startSpeechFromParagraph(speechParaIdx + 1, currentSpeechOnFinished);
+      } else if (audioBarMode === 'playlist') {
+        const activeArticles = getFilteredArticles();
+        if (audioIndex < activeArticles.length - 1) {
+          audioIndex++;
+          playCurrentAudioNews();
+        }
       }
     }
 
+    // Volta para o parágrafo anterior da matéria atual; no início dela, no modo playlist
+    // volta para a notícia anterior.
     function prevAudioNews() {
-      if (audioIndex > 0) {
+      if (speechParagraphs.length === 0) return;
+      if (speechParaIdx > 0) {
+        window.speechSynthesis.cancel();
+        startSpeechFromParagraph(speechParaIdx - 1, currentSpeechOnFinished);
+      } else if (audioBarMode === 'playlist' && audioIndex > 0) {
         audioIndex--;
         playCurrentAudioNews();
       }
     }
 
     function stopAudio() {
+      speechToken++; // invalida callbacks pendentes de utterances antigas
       if ('speechSynthesis' in window) window.speechSynthesis.cancel();
       isAudioPlaying = false;
+      speechParagraphs = [];
+      speechParaIdx = 0;
+      audioBarMode = null;
+      currentSpeechOnFinished = null;
+      updatePlayButtonIcon();
     }
 
     // GERENCIADOR DE PORTAIS
