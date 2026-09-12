@@ -1759,7 +1759,7 @@
               ${article.thumbnail ? `<img src="${article.thumbnail}" style="width:100%; max-height:380px; object-fit:cover; border-radius:12px; margin: 12px 0;" loading="lazy" onerror="this.onerror=null; this.src=generateAiImageUrl('${escapeHtml(article.cleanTitle)}', '${escapeHtml(article.category)}');">` : ''}
               <div class="page-reader-content">${bodyContent}</div>
               <div style="margin-top: 16px; display: flex; gap: 10px;">
-                <button class="btn btn-secondary" onclick="fetchFullArticleText('${article.link}', 'reader-body-${idx}', true, '${escapeHtml(article.cleanTitle)}', '${escapeHtml(article.source)}')">
+                <button class="btn btn-secondary" onclick="fetchFullArticleTextById('${article.id}', 'reader-body-${idx}', true)">
                   <i class="fa-solid ${cached ? 'fa-rotate' : 'fa-wand-magic-sparkles'}"></i> ${cached ? 'Re-extrair Texto' : 'Buscar Artigo Completo'}
                 </button>
                 <button class="btn btn-secondary" style="font-size:0.8rem;" onclick="toggleReadArticle('${escapeHtml(article.guid)}')">
@@ -1981,11 +1981,11 @@
 
           <div style="display:flex; gap:6px; align-items:center;">
             ${cached ? `
-              <button class="btn btn-secondary" style="padding:6px 12px; font-size:0.8rem; background:rgba(16,185,129,0.15); color:var(--accent-primary); border-color:rgba(16,185,129,0.3);" onclick="fetchFullArticleText('${article.link}', 'modal-extracted-body', true, '${escapeHtml(article.cleanTitle)}', '${escapeHtml(article.source)}')">
+              <button class="btn btn-secondary" style="padding:6px 12px; font-size:0.8rem; background:rgba(16,185,129,0.15); color:var(--accent-primary); border-color:rgba(16,185,129,0.3);" onclick="fetchFullArticleTextById('${article.id}', 'modal-extracted-body', true)">
                 <i class="fa-solid fa-rotate"></i> Texto Salvo (Re-extrair)
               </button>
             ` : `
-              <button class="btn btn-secondary" style="padding:6px 12px; font-size:0.8rem;" onclick="fetchFullArticleText('${article.link}', 'modal-extracted-body', false, '${escapeHtml(article.cleanTitle)}', '${escapeHtml(article.source)}')">
+              <button class="btn btn-secondary" style="padding:6px 12px; font-size:0.8rem;" onclick="fetchFullArticleTextById('${article.id}', 'modal-extracted-body', false)">
                 <i class="fa-solid fa-wand-magic-sparkles"></i> Extrair Texto Completo
               </button>
             `}
@@ -2124,6 +2124,13 @@
       return paragraphs;
     }
 
+    // Wrapper seguro: busca o artigo pelo ID (evita interpolar título/URL com aspas dentro de onclick="")
+    function fetchFullArticleTextById(articleId, targetContainerId, forceRefresh = false) {
+      const article = articles.find(a => a.id === articleId || a.guid === articleId);
+      if (!article) return;
+      fetchFullArticleText(article.link, targetContainerId, forceRefresh, article.cleanTitle, article.source);
+    }
+
     // Extrator Avançado de Notícias (Jina Reader AI Engine + Direct Resolver + Proxies CORS + Cache)
     async function fetchFullArticleText(articleUrl, targetContainerId, forceRefresh = false, articleTitle = '', articleSource = '') {
       const container = document.getElementById(targetContainerId);
@@ -2171,12 +2178,16 @@
                 <i class="fa-solid fa-bolt" style="color:#34d399;"></i>
                 <span><strong>Texto completo extraído carregado do cache!</strong> (${cached.paragraphs.length} blocos via ${escapeHtml(cached.engine || 'Cache')})</span>
               </div>
-              <button class="btn btn-secondary" style="padding:2px 8px; font-size:0.75rem;" onclick="fetchFullArticleText('${escapeHtml(targetUrl)}', '${targetContainerId}', true, '${escapeHtml(articleTitle)}', '${escapeHtml(articleSource)}')">Re-extrair</button>
+              <button class="btn btn-secondary" style="padding:2px 8px; font-size:0.75rem;" id="reextract-btn-${targetContainerId}">Re-extrair</button>
             </div>
             <div class="extracted-text-body" style="font-size:1.05rem; line-height:1.8;">
               ${cached.paragraphs.map(p => p.startsWith('<h3') ? p : `<p style="margin-bottom:16px;">${p}</p>`).join('')}
             </div>
           `;
+          const reextractBtn = document.getElementById(`reextract-btn-${targetContainerId}`);
+          if (reextractBtn) {
+            reextractBtn.addEventListener('click', () => fetchFullArticleText(targetUrl, targetContainerId, true, articleTitle, articleSource));
+          }
           return;
         }
       }
