@@ -1328,7 +1328,11 @@
       if (cached) {
         const parsed = JSON.parse(cached);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          articles = parsed.map(a => ({ ...a, pubDate: new Date(a.pubDate) }));
+          articles = parsed.map(a => ({
+            ...a,
+            pubDate: new Date(a.pubDate),
+            thumbnail: String(a.thumbnail || '').includes('pollinations.ai') ? generateAiImageUrl(a.cleanTitle || a.title, a.category) : a.thumbnail
+          }));
         }
       }
     } catch(e) {}
@@ -1452,10 +1456,100 @@
       if (!dateStr) return new Date();
       if (dateStr instanceof Date) return isNaN(dateStr.getTime()) ? new Date() : dateStr;
       
+      // Datas em português do RSS do UOL ("Qua, 21 Out 2026 22:39:06 -0300")
+      const ptMonths = { jan: 'Jan', fev: 'Feb', mar: 'Mar', abr: 'Apr', mai: 'May', jun: 'Jun', jul: 'Jul', ago: 'Aug', set: 'Sep', out: 'Oct', nov: 'Nov', dez: 'Dec' };
+      const ptDate = String(dateStr).trim().match(/^(?:\S+,\s*)?(\d{1,2})\s+([a-zç]{3})\w*\s+(\d{4})\s+(.*)$/i);
+      if (ptDate && ptMonths[ptDate[2].toLowerCase()]) {
+        dateStr = `${ptDate[1]} ${ptMonths[ptDate[2].toLowerCase()]} ${ptDate[3]} ${ptDate[4]}`;
+      }
+
       let formattedStr = String(dateStr).trim().replace(/^(\d{4}-\d{2}-\d{2})\s+(\d{2}:\d{2})/, '$1T$2');
       let d = new Date(formattedStr);
       if (isNaN(d.getTime())) d = new Date(dateStr);
       return isNaN(d.getTime()) ? new Date() : d;
+    }
+
+    // Busca itens de um feed: tenta rss2json; se falhar (ex.: bloqueio 403), baixa o XML
+    // direto ou via r.jina.ai e faz o parse no navegador.
+    async function fetchFeedItems(feedUrl) {
+      const withTimeout = (ms) => {
+        const controller = new AbortController();
+        setTimeout(() => controller.abort(), ms);
+        return controller.signal;
+      };
+
+      try {
+        const res = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feedUrl)}`, { signal: withTimeout(8000) });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.status === 'ok' && data.items && data.items.length) return data.items;
+        }
+      } catch (e) {}
+
+      const sources = [
+        () => fetch(feedUrl, { signal: withTimeout(8000) }),
+        () => fetch(`https://r.jina.ai/${feedUrl}`, { headers: { 'X-Return-Format': 'html' }, signal: withTimeout(20000) })
+      ];
+      for (const source of sources) {
+        try {
+          const res = await source();
+          if (!res.ok) continue;
+          const items = parseFeedXml(await res.text());
+          if (items.length) return items;
+        } catch (e) {}
+      }
+      return [];
+    }
+
+    // Converte RSS 2.0 / Atom no mesmo formato de item do rss2json
+    function parseFeedXml(xmlText) {
+      const doc = new DOMParser().parseFromString(xmlText.trim(), 'text/xml');
+      if (doc.querySelector('parsererror')) return [];
+
+      const text = (el, tag) => {
+        const node = el.getElementsByTagName(tag)[0];
+        return node ? node.textContent.trim() : '';
+      };
+      const mediaUrl = (el) => {
+        for (const tag of ['media:content', 'media:thumbnail', 'enclosure']) {
+          const node = el.getElementsByTagName(tag)[0];
+          const url = node && (node.getAttribute('url') || node.getAttribute('href'));
+          if (url && (tag !== 'enclosure' || (node.getAttribute('type') || 'image').startsWith('image'))) return url;
+        }
+        return '';
+      };
+
+      const rssItems = Array.from(doc.getElementsByTagName('item'));
+      if (rssItems.length) {
+        return rssItems.map(el => {
+          const thumb = mediaUrl(el);
+          return {
+            title: text(el, 'title'),
+            link: text(el, 'link'),
+            guid: text(el, 'guid'),
+            pubDate: text(el, 'pubDate') || text(el, 'dc:date'),
+            description: text(el, 'description'),
+            content: text(el, 'content:encoded') || text(el, 'description'),
+            thumbnail: thumb,
+            enclosure: thumb ? { link: thumb } : {}
+          };
+        });
+      }
+
+      return Array.from(doc.getElementsByTagName('entry')).map(el => {
+        const linkEl = Array.from(el.getElementsByTagName('link')).find(l => !l.getAttribute('rel') || l.getAttribute('rel') === 'alternate');
+        const thumb = mediaUrl(el);
+        return {
+          title: text(el, 'title'),
+          link: linkEl ? linkEl.getAttribute('href') : '',
+          guid: text(el, 'id'),
+          pubDate: text(el, 'published') || text(el, 'updated'),
+          description: text(el, 'summary') || text(el, 'content'),
+          content: text(el, 'content') || text(el, 'summary'),
+          thumbnail: thumb,
+          enclosure: thumb ? { link: thumb } : {}
+        };
+      });
     }
 
     async function fetchNews(isManual = false) {
@@ -1464,14 +1558,9 @@
 
       try {
         const fetchPromises = feeds.map(async (feed) => {
-          const apiUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feed.url)}`;
           try {
-            const response = await fetch(apiUrl);
-            if (!response.ok) return [];
-            const data = await response.json();
-            if (data.status !== 'ok') return [];
-
-            return (data.items || []).map((item, index) => ({
+            const items = await fetchFeedItems(feed.url);
+            return items.map((item, index) => ({
               id: `${feed.id}-${index}`,
               guid: item.guid || item.link || `${feed.id}-${index}`,
               title: item.title,
@@ -1621,12 +1710,34 @@
     }
 
     // Gerador de Imagens Sintetizadas por IA (Pollinations AI Engine)
+    // Capa gerada localmente (SVG) para not\u00EDcias sem imagem \u2014 o pollinations.ai passou a
+    // limitar o plano gratuito e devolvia a imagem "Free limit reached".
     function generateAiImageUrl(title, category) {
-      const safeTitle = (title || 'noticia').replace(/[^\w\s\u00C0-\u024F]/gi, ' ').slice(0, 80);
-      const safeCat = category || 'geral';
-      const prompt = `editorial news illustration about ${safeCat}: ${safeTitle}`;
-      const seed = Math.abs(hashString(title || 'noticia'));
-      return `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=800&height=450&nologo=true&seed=${seed}`;
+      const xmlEscape = s => String(s).replace(/[<>&"']/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;', "'": '&apos;' }[c]));
+      const safeCat = xmlEscape((category || 'Not\u00EDcias').toUpperCase().slice(0, 30));
+      const hue = Math.abs(hashString(category || 'geral')) % 360;
+      const hue2 = (hue + 40 + Math.abs(hashString(title || '')) % 60) % 360;
+
+      // Quebra o t\u00EDtulo em at\u00E9 3 linhas de ~32 caracteres
+      const words = String(title || '').split(/\s+/).filter(Boolean);
+      const lines = [];
+      let line = '';
+      for (const w of words) {
+        if ((line + ' ' + w).trim().length > 32) { lines.push(line); line = w; } else line = (line + ' ' + w).trim();
+        if (lines.length === 3) break;
+      }
+      if (lines.length < 3 && line) lines.push(line);
+      if (lines.length === 3 && words.join(' ').length > lines.join(' ').length) lines[2] = lines[2].replace(/\s*\S*$/, '') + '\u2026';
+
+      const tspans = lines.map((l, i) => `<tspan x="48" dy="${i === 0 ? 0 : 52}">${xmlEscape(l)}</tspan>`).join('');
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="800" height="450" viewBox="0 0 800 450">` +
+        `<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="hsl(${hue},55%,28%)"/><stop offset="1" stop-color="hsl(${hue2},60%,14%)"/></linearGradient></defs>` +
+        `<rect width="800" height="450" fill="url(#g)"/>` +
+        `<circle cx="690" cy="90" r="160" fill="hsl(${hue},70%,60%)" opacity="0.12"/>` +
+        `<text x="48" y="${lines.length > 2 ? 250 : 290}" fill="#fff" font-family="Inter, Arial, sans-serif" font-size="40" font-weight="700">${tspans}</text>` +
+        `<text x="48" y="410" fill="hsl(${hue},80%,80%)" font-family="Inter, Arial, sans-serif" font-size="20" font-weight="600" letter-spacing="3">${safeCat}</text>` +
+        `</svg>`;
+      return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
     }
 
     function hashString(str) {
@@ -1655,7 +1766,8 @@
         url = url
           .replace(/=s\d+[-c]*/gi, '=s800')
           .replace(/=w\d+-h\d+[-c]*/gi, '=w800-h450-p-k-no-nu')
-          .replace(/\/ws\/\d+\//gi, '/ws/800/');
+          .replace(/\/ws\/\d+\//gi, '/ws/800/')
+          .replace(/(imguol\.com\.br\/.*_v2)_\d+x\d+(\.\w+)$/i, '$1_900x506$2');
         return url;
       }
 
