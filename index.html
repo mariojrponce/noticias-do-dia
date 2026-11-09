@@ -1261,7 +1261,8 @@
       { id: 'f10', name: 'Agência Brasil - Internacional', category: 'Mundo', url: 'https://agenciabrasil.ebc.com.br/rss/internacional/feed.xml' },
       { id: 'f11', name: 'Agência Brasil - Meio Ambiente', category: 'Meio Ambiente', url: 'https://agenciabrasil.ebc.com.br/radioagencia-nacional/rss/meio-ambiente/feed.xml' },
       { id: 'f12', name: 'Agência iNFRA', category: 'Infraestrutura', url: 'https://agenciainfra.com/blog/feed/' },
-      { id: 'f13', name: 'MegaWhat', category: 'Tecnologia', url: 'https://megawhat.uol.com.br/feed/' }
+      { id: 'f13', name: 'MegaWhat', category: 'Energia', url: 'https://megawhat.uol.com.br/feed/' },
+      { id: 'f14', name: 'Petronotícias', category: 'Energia', url: 'https://petronoticias.com.br/feed/' }
     ];
 
     const CATEGORY_IMAGES = {
@@ -1270,6 +1271,7 @@
       economia: "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=600&q=80",
       tecnologia: "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=600&q=80",
       "meio ambiente": "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=600&q=80",
+      energia: "https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?auto=format&fit=crop&w=600&q=80",
       default: "https://images.unsplash.com/photo-1504711434969-e33886168f5c?auto=format&fit=crop&w=600&q=80"
     };
 
@@ -1325,6 +1327,14 @@
       }
       if (!storedFeeds.some(f => f.url && f.url.includes('megawhat.uol.com.br'))) {
         storedFeeds = storedFeeds.concat(DEFAULT_FEEDS.filter(f => f.url.includes('megawhat.uol.com.br')));
+        migrated = true;
+      }
+      // MegaWhat é portal de energia: corrige categoria salva anteriormente
+      storedFeeds.forEach(f => {
+        if (f.url && f.url.includes('megawhat.uol.com.br') && f.category !== 'Energia') { f.category = 'Energia'; migrated = true; }
+      });
+      if (!storedFeeds.some(f => f.url && f.url.includes('petronoticias.com.br'))) {
+        storedFeeds = storedFeeds.concat(DEFAULT_FEEDS.filter(f => f.url.includes('petronoticias.com.br')));
         migrated = true;
       }
       if (migrated) localStorage.setItem('portal_rss_feeds', JSON.stringify(storedFeeds));
