@@ -1260,7 +1260,8 @@
       { id: 'f9', name: 'Agência Brasil - Economia', category: 'Economia', url: 'https://agenciabrasil.ebc.com.br/rss/economia/feed.xml' },
       { id: 'f10', name: 'Agência Brasil - Internacional', category: 'Mundo', url: 'https://agenciabrasil.ebc.com.br/rss/internacional/feed.xml' },
       { id: 'f11', name: 'Agência Brasil - Meio Ambiente', category: 'Meio Ambiente', url: 'https://agenciabrasil.ebc.com.br/radioagencia-nacional/rss/meio-ambiente/feed.xml' },
-      { id: 'f12', name: 'Agência iNFRA', category: 'Infraestrutura', url: 'https://agenciainfra.com/blog/feed/' }
+      { id: 'f12', name: 'Agência iNFRA', category: 'Infraestrutura', url: 'https://agenciainfra.com/blog/feed/' },
+      { id: 'f13', name: 'MegaWhat', category: 'Tecnologia', url: 'https://megawhat.uol.com.br/feed/' }
     ];
 
     const CATEGORY_IMAGES = {
@@ -1320,6 +1321,10 @@
       }
       if (!storedFeeds.some(f => f.url && f.url.includes('agenciainfra.com'))) {
         storedFeeds = storedFeeds.concat(DEFAULT_FEEDS.filter(f => f.url.includes('agenciainfra.com')));
+        migrated = true;
+      }
+      if (!storedFeeds.some(f => f.url && f.url.includes('megawhat.uol.com.br'))) {
+        storedFeeds = storedFeeds.concat(DEFAULT_FEEDS.filter(f => f.url.includes('megawhat.uol.com.br')));
         migrated = true;
       }
       if (migrated) localStorage.setItem('portal_rss_feeds', JSON.stringify(storedFeeds));
